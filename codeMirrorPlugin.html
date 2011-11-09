@@ -3,36 +3,38 @@
 <head>
 	<title>CodeMirror modes</title>
 	<style type="text/css">
-		ul {
+		ul#modelist {
 			list-style-type: none;
+			column-count: 3;
+			-moz-column-count: 3;
+			-webkit-column-count: 3;
+			width: 40em;
 		}
+		ol>li { margin-bottom: 1em; }
 		#url {	
 			width: 60em;
 			font-family: monospace;
-			color: white;
-			background: black;
-			padding: 5px;
+			background: #ddd;
+			padding: 15px;
 		}
 	</style>
 	</script>
-	<script src="lib/plugin.js"></script>
+	<script src="http://orionhub.org/orion/plugin.js"></script>
 	<script>
 var modes = ["clike", "diff", "javascript", "ntriples", "plsql", "ruby", "sparql", "xml", "clojure", "groovy", "jinja2", "pascal", "python", "rust", "stex", "xmlpure", "coffeescript", "haskell", "lua", "perl", "r", "scheme", "tiddlywiki", "yaml", "css", "htmlmixed", "markdown", "php", "rst", "smalltalk", "velocity"].sort();
 var defaults = ["clike", "xml", "javascript", "css", "htmlmixed", "ruby", "perl", "markdown", "php"];
-var required = ["clike"];
+var required = ["clike"]; // TODO some modes depend on others (eg. htmlmixed -> css)
 
 function boxes() {
 	return Array.prototype.filter.call(document.getElementsByTagName("input"), function(i){ return i.type === "checkbox"; });
 }
 
 function updateURL() {
-	var loc = window.location + "";
-	var base = loc.substring(0, loc.indexOf(window.location.search)) || loc;
-	var q = [];
-	boxes().forEach(function(box) {
-		box.checked && q.push(box.value);
-	});
-	document.getElementById("url").value = base + "?" + q.join("+");
+	var base = window.location.href.replace(window.location.hash, "");
+	var q = boxes().map(function(box) { return box.checked && box.value; }).filter(function(b) { return b; });
+	var hash = q.join("+");
+	document.getElementById("url").value = base + hash;
+	window.location.hash = hash;
 }
 
 function createForm() {
@@ -52,9 +54,9 @@ function createForm() {
 	});
 }
 
-function check(what) {
+function check(/*"all"|"none"|Array*/ what) {
 	boxes().forEach(function(box) {
-		box.checked = (what === "all" || (what === "default" && defaults.indexOf(box.value) !== -1));
+		box.checked = (what === "all" || (what instanceof Array && what.indexOf(box.value) !== -1));
 	});
 	updateURL();
 }
@@ -66,14 +68,19 @@ function focusUrl() {
 }
 
 window.onload = function() {
-	var q = (window.location.search + "").substring(1);
-	var params = q.split("+");
-	if (params && params.length) {
-		// Try to install
-		console.debug("install [" + params.join(",") + "]");
-	} else {
+	var hash = (window.location.hash).substring(1);
+	var toInstall = hash && hash.split("+");
+	toInstall = (toInstall && toInstall .length) ? toInstall : defaults;
+	console.debug("modes to install: [" + toInstall.join(",") + "]");
+	try {
+		var provider = new eclipse.PluginProvider();
+		var serviceProvider = provider.registerServiceProvider("orion.edit.listener", {}, {});
+		var serviceProvider = provider.registerServiceProvider("orion.edit.highlight", {}, {});
+		provider.connect();
+	} catch (e) {
+		console.debug("Couldn't install plugin: " + e);
 		createForm();
-		check("default");
+		check(toInstall);
 		updateURL();
 	}
 };
@@ -81,21 +88,28 @@ window.onload = function() {
 </head>
 <body>
 <h1>CodeMirror modes</h1>
-<p>This is a plugin for Orion. See below for installation instructions.</p>
+<p>This is a plugin for Orion that provides syntax highlighting using <a href="https://github.com/marijnh/CodeMirror2">CodeMirror</a> 
+<a href="http://codemirror.net/manual.html#modeapi">modes</a>. See below for installation instructions.</p>
+
+<h2>Requirements</h2>
+<ul><li><a href="http://download.eclipse.org/orion/">Orion 0.4 M1</a></li></ul>
 
 <h2>Installation</h2>
 <form>
 	<ol>
 		<li>Check the modes that you want to enable support for:
-			<ul id="modelist">
-			</ul>
+			<div class="cols">
+				<ul id="modelist"></ul>
+			</div>
 			<button type="button" onclick="check('all')">Check All</button>
 			<button type="button" onclick="check('none')">Check None</button>
-			<button type="button" onclick="check('default')">Defaults</button></li>
+			<button type="button" onclick="check(defaults)">Defaults</button></li>
 		<li>Copy the resulting URL from this box:<br>
 			<textarea id="url" type="text" onclick="focusUrl()" rows="1" wrap="off"></textarea>
 		</li>
-		<li>Log in to your Orion environment, go to the "Plugins" page, and install the URL you copied earlier.</li>
+		<li>Log in to your Orion environment, go to the "Plugins" page, paste the URL into the "Install" field, and click Install.</li>
+		<li>????</li>
+		<li>Profit</li>
 	</ol>
 </form>
 </body>
