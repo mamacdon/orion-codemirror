@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CodeMirror modes</title>
+	<style type="text/css">
+		ul {
+			list-style-type: none;
+		}
+		#url {	
+			width: 60em;
+			font-family: monospace;
+			color: white;
+			background: black;
+			padding: 5px;
+		}
+	</style>
+	</script>
+	<script src="lib/plugin.js"></script>
+	<script>
+var modes = ["clike", "diff", "javascript", "ntriples", "plsql", "ruby", "sparql", "xml", "clojure", "groovy", "jinja2", "pascal", "python", "rust", "stex", "xmlpure", "coffeescript", "haskell", "lua", "perl", "r", "scheme", "tiddlywiki", "yaml", "css", "htmlmixed", "markdown", "php", "rst", "smalltalk", "velocity"].sort();
+var defaults = ["clike", "xml", "javascript", "css", "htmlmixed", "ruby", "perl", "markdown", "php"];
+var required = ["clike"];
+
+function boxes() {
+	return Array.prototype.filter.call(document.getElementsByTagName("input"), function(i){ return i.type === "checkbox"; });
+}
+
+function updateURL() {
+	var loc = window.location + "";
+	var base = loc.substring(0, loc.indexOf(window.location.search)) || loc;
+	var q = [];
+	boxes().forEach(function(box) {
+		box.checked && q.push(box.value);
+	});
+	document.getElementById("url").value = base + "?" + q.join("+");
+}
+
+function createForm() {
+	var list = document.getElementById("modelist");
+	modes.forEach(function(mode) {
+		var li = document.createElement("li");
+		var label = document.createElement("label");
+		var checkbox = document.createElement("input");
+		checkbox.type = "checkbox";
+		checkbox.value = mode;
+		label.addEventListener("click", updateURL, false);
+		
+		label.appendChild(checkbox);
+		label.appendChild(document.createTextNode(mode));
+		li.appendChild(label);
+		list.appendChild(li);
+	});
+}
+
+function check(what) {
+	boxes().forEach(function(box) {
+		box.checked = (what === "all" || (what === "default" && defaults.indexOf(box.value) !== -1));
+	});
+	updateURL();
+}
+
+function focusUrl() {
+	var url = document.getElementById("url");
+	url.focus();
+	url.select();
+}
+
+window.onload = function() {
+	var q = (window.location.search + "").substring(1);
+	var params = q.split("+");
+	if (params && params.length) {
+		// Try to install
+		console.debug("install [" + params.join(",") + "]");
+	} else {
+		createForm();
+		check("default");
+		updateURL();
+	}
+};
+	</script>
+</head>
+<body>
+<h1>CodeMirror modes</h1>
+<p>This is a plugin for Orion. See below for installation instructions.</p>
+
+<h2>Installation</h2>
+<form>
+	<ol>
+		<li>Check the modes that you want to enable support for:
+			<ul id="modelist">
+			</ul>
+			<button type="button" onclick="check('all')">Check All</button>
+			<button type="button" onclick="check('none')">Check None</button>
+			<button type="button" onclick="check('default')">Defaults</button></li>
+		<li>Copy the resulting URL from this box:<br>
+			<textarea id="url" type="text" onclick="focusUrl()" rows="1" wrap="off"></textarea>
+		</li>
+		<li>Log in to your Orion environment, go to the "Plugins" page, and install the URL you copied earlier.</li>
+	</ol>
+</form>
+</body>
+</html>
