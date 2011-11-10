@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>CodeMirror modes</title>
+	<title>orion-codemirror plugin</title>
 	<style type="text/css">
 		ul#modelist {
 			list-style-type: none;
@@ -35,7 +35,7 @@ function boxes() {
 
 function updateURL() {
 	var base = window.location.href.replace(window.location.hash, "");
-	var q = boxes().map(function(box) { return box.checked && box.value; }).filter(function(b) { return b; });
+	var q = boxes().map(function(box) { return box.checked && box.value; }).filter(function(b) { return !!b; });
 	var hash = q.join("+");
 	document.getElementById("url").value = base + hash;
 	window.location.hash = hash;
@@ -93,7 +93,7 @@ window.onload = function() {
 	</script>
 </head>
 <body>
-<h1>CodeMirror modes</h1>
+<h1>orion-codemirror</h1>
 <p>This is a plugin for Orion that provides syntax highlighting using <a href="https://github.com/marijnh/CodeMirror2">CodeMirror</a> 
 <a href="http://codemirror.net/manual.html#modeapi">modes</a>. See below for installation instructions.</p>
 
