@@ -3,6 +3,7 @@ Orion-codemirror is a plugin for [Eclipse Orion](http://wiki.eclipse.org/Orion) 
 Installing from Github
 ----------------------
 The latest version of this plugin is hosted on Github.
+
 1. Go to [http://mamacdon.github.com/orion-codemirror/codeMirrorPlugin.html](http://mamacdon.github.com/orion-codemirror/codeMirrorPlugin.html).
 2. Follow the installation instructions.
 
