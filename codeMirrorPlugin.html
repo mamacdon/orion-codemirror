@@ -20,14 +20,53 @@
 	</style>
 	</script>
 	<script src="http://orionhub.org/orion/plugin.js"></script>
-	<script src="lib/global.js"></script>
-	<script src="lib/eventTarget.js"></script>
-	<script src="lib/textModel.js"></script>
+	<script src="lib/orion/global.js"></script>
+	<script src="lib/orion/eventTarget.js"></script>
+	<script src="lib/orion/textModel.js"></script>
 	<script src="lib/mirrorTextModel.js"></script>
+	<script src="lib/codeMirrorFacade.js"></script>
+	<script src="lib/highlighter.js"></script>
 	<script>
-var modes = ["clike", "diff", "javascript", "ntriples", "plsql", "ruby", "sparql", "xml", "clojure", "groovy", "jinja2", "pascal", "python", "rust", "stex", "xmlpure", "coffeescript", "haskell", "lua", "perl", "r", "scheme", "tiddlywiki", "yaml", "css", "htmlmixed", "markdown", "php", "rst", "smalltalk", "velocity"].sort();
+		// For compatibility with perl mode, which does naughty non-API things to CodeMirror.StringStream.prototype
+		CodeMirror.StringStream = orion.codeMirror.Stream;
+	</script>
+	<!-- Mode scripts. TODO: inject <script> for selected modes only, or use requirejs -->
+	<script src="lib/codemirror2/mode/clike/clike.js"></script>
+	<script src="lib/codemirror2/mode/clojure/clojure.js"></script>
+	<script src="lib/codemirror2/mode/coffeescript/coffeescript.js"></script>
+	<script src="lib/codemirror2/mode/css/css.js"></script>
+	<script src="lib/codemirror2/mode/diff/diff.js"></script>
+	<script src="lib/codemirror2/mode/groovy/groovy.js"></script>
+	<script src="lib/codemirror2/mode/haskell/haskell.js"></script>
+	<script src="lib/codemirror2/mode/htmlmixed/htmlmixed.js"></script>
+	<script src="lib/codemirror2/mode/javascript/javascript.js"></script>
+	<script src="lib/codemirror2/mode/jinja2/jinja2.js"></script>
+	<script src="lib/codemirror2/mode/lua/lua.js"></script>
+	<script src="lib/codemirror2/mode/markdown/markdown.js"></script>
+	<script src="lib/codemirror2/mode/ntriples/ntriples.js"></script>
+	<script src="lib/codemirror2/mode/pascal/pascal.js"></script>
+	<script src="lib/codemirror2/mode/perl/perl.js"></script>
+	<script src="lib/codemirror2/mode/php/php.js"></script>
+	<script src="lib/codemirror2/mode/plsql/plsql.js"></script>
+	<script src="lib/codemirror2/mode/python/python.js"></script>
+	<script src="lib/codemirror2/mode/r/r.js"></script>
+	<script src="lib/codemirror2/mode/rst/rst.js"></script>
+	<script src="lib/codemirror2/mode/ruby/ruby.js"></script>
+	<script src="lib/codemirror2/mode/rust/rust.js"></script>
+	<script src="lib/codemirror2/mode/scheme/scheme.js"></script>
+	<script src="lib/codemirror2/mode/smalltalk/smalltalk.js"></script>
+	<script src="lib/codemirror2/mode/sparql/sparql.js"></script>
+	<script src="lib/codemirror2/mode/stex/stex.js"></script>
+	<script src="lib/codemirror2/mode/tiddlywiki/tiddlywiki.js"></script>
+	<script src="lib/codemirror2/mode/velocity/velocity.js"></script>
+	<script src="lib/codemirror2/mode/xml/xml.js"></script>
+	<script src="lib/codemirror2/mode/xmlpure/xmlpure.js"></script>
+	<script src="lib/codemirror2/mode/yaml/yaml.js"></script>
+	<!-- END -->
+	<script>
+	var modes = ["clike", "clojure", "coffeescript", "css", "diff", "groovy", "haskell", "htmlmixed", "javascript", "jinja2", "lua", "markdown", "ntriples", "pascal", "perl", "php", "plsql", "python", "r", "rst", "ruby", "rust", "scheme", "smalltalk", "sparql", "stex", "tiddlywiki", "velocity", "xml", "xmlpure", "yaml"];
 var defaults = ["clike", "xml", "javascript", "css", "htmlmixed", "ruby", "perl", "markdown", "php"];
-var required = ["clike"]; // TODO some modes depend on others (eg. htmlmixed -> css)
+//var required = ["clike"]; // TODO some modes depend on others (eg. htmlmixed -> css)
 
 function boxes() {
 	return Array.prototype.filter.call(document.getElementsByTagName("input"), function(i){ return i.type === "checkbox"; });
@@ -74,13 +113,16 @@ function focusUrl() {
 window.onload = function() {
 	var hash = (window.location.hash).substring(1);
 	var toInstall = hash && hash.split("+");
-	toInstall = (toInstall && toInstall .length) ? toInstall : defaults;
+	toInstall = (toInstall && toInstall.length) ? toInstall : defaults;
 	console.debug("modes to install: [" + toInstall.join(",") + "]");
 	try {
 		var provider = new eclipse.PluginProvider();
-		var serviceProvider = provider.registerServiceProvider("orion.edit.listener", 
-			new orion.editor.MirrorTextModel(orion.textview),
-			{ types: ["ModelChanging"] });
+		var serviceProvider = provider.registerServiceProvider("orion.edit.model", 
+			new orion.editor.MirrorTextModel,
+			{	types: ["ModelChanging"]
+			});
+
+		// This is the part that will dispatch highlight updates on itself
 		var serviceProvider = provider.registerServiceProvider("orion.edit.highlight", {}, {});
 		provider.connect();
 	} catch (e) {
