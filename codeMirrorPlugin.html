@@ -20,6 +20,10 @@
 	</style>
 	</script>
 	<script src="http://orionhub.org/orion/plugin.js"></script>
+	<script src="lib/global.js"></script>
+	<script src="lib/eventTarget.js"></script>
+	<script src="lib/textModel.js"></script>
+	<script src="lib/mirrorTextModel.js"></script>
 	<script>
 var modes = ["clike", "diff", "javascript", "ntriples", "plsql", "ruby", "sparql", "xml", "clojure", "groovy", "jinja2", "pascal", "python", "rust", "stex", "xmlpure", "coffeescript", "haskell", "lua", "perl", "r", "scheme", "tiddlywiki", "yaml", "css", "htmlmixed", "markdown", "php", "rst", "smalltalk", "velocity"].sort();
 var defaults = ["clike", "xml", "javascript", "css", "htmlmixed", "ruby", "perl", "markdown", "php"];
@@ -74,7 +78,9 @@ window.onload = function() {
 	console.debug("modes to install: [" + toInstall.join(",") + "]");
 	try {
 		var provider = new eclipse.PluginProvider();
-		var serviceProvider = provider.registerServiceProvider("orion.edit.listener", {}, {});
+		var serviceProvider = provider.registerServiceProvider("orion.edit.listener", 
+			new orion.editor.MirrorTextModel(orion.textview),
+			{ types: ["ModelChanging"] });
 		var serviceProvider = provider.registerServiceProvider("orion.edit.highlight", {}, {});
 		provider.connect();
 	} catch (e) {
