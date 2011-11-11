@@ -24,11 +24,11 @@
 	<script src="lib/orion/eventTarget.js"></script>
 	<script src="lib/orion/textModel.js"></script>
 	<script src="lib/mirrorTextModel.js"></script>
-	<script src="lib/codeMirrorFacade.js"></script>
+	<script src="lib/mirror.js"></script>
 	<script src="lib/highlighter.js"></script>
 	<script>
 		// For compatibility with perl mode, which does naughty non-API things to CodeMirror.StringStream.prototype
-		CodeMirror.StringStream = orion.codeMirror.Stream;
+		CodeMirror.StringStream = orion.codemirror.Stream;
 	</script>
 	<!-- Mode scripts. TODO: inject <script> for selected modes only, or use requirejs -->
 	<script src="lib/codemirror2/mode/clike/clike.js"></script>
@@ -65,8 +65,57 @@
 	<!-- END -->
 	<script>
 	var modes = ["clike", "clojure", "coffeescript", "css", "diff", "groovy", "haskell", "htmlmixed", "javascript", "jinja2", "lua", "markdown", "ntriples", "pascal", "perl", "php", "plsql", "python", "r", "rst", "ruby", "rust", "scheme", "smalltalk", "sparql", "stex", "tiddlywiki", "velocity", "xml", "xmlpure", "yaml"];
-var defaults = ["clike", "xml", "javascript", "css", "htmlmixed", "ruby", "perl", "markdown", "php"];
+var defaults = ["clike", "css", "htmlmixed", "javascript", "markdown", "perl", "php", "ruby", "xml"];
 //var required = ["clike"]; // TODO some modes depend on others (eg. htmlmixed -> css)
+var fileExtensions = {
+	// TODO this is clumsy. Orion needs MIME support somewhere
+	"clike": ["c", "C", "cc", "cpp", "c++", "h"],
+	"clojure": ["clj"],
+	"coffeescript": ["cs"],
+	"css": ["css"],
+	"diff": [],
+	"groovy": ["groovy"],
+	"haskell": ["hs"],
+	"htmlmixed": ["html", "htm"],
+	"javascript": ["js"],
+	"jinja2": [],
+	"lua": ["lua"],
+	"markdown": ["md"],
+	"ntriples": ["nt"],
+	"pascal": [],
+	"perl": [],
+	"php": ["php", "php3", "php4", "php5", "phtml"],
+	"plsql": ["sql"],
+	"python": ["py"],
+	"r": ["r"],
+	"rst": ["rst"],
+	"ruby": ["rb"],
+	"rust": ["rs", "rc"],
+	"scheme": ["scm", "ss"],
+	"smalltalk": ["sm"],
+	"sparql": ["spk"],
+	"stex": [],
+	"tiddlywiki": [],
+	"velocity": [],
+	"xml": ["xml"],
+	"xmlpure": [],
+	"yaml": ["yaml"]
+};
+
+function getFileTypes(modes) {
+	return modes.reduce(function(prev, modeName) {
+			Array.prototype.push.apply(prev, fileExtensions[modeName]);
+			return prev;
+		}, []);
+}
+
+function getModeFor(extension) {
+	for (var modeName in fileExtensions) {
+		if (fileExtensions.hasOwnProperty(modeName) && fileExtensions[modeName] && fileExtensions[modeName].indexOf(extension) !== -1) {
+			return modeName;
+		}
+	}
+}
 
 function boxes() {
 	return Array.prototype.filter.call(document.getElementsByTagName("input"), function(i){ return i.type === "checkbox"; });
@@ -89,7 +138,6 @@ function createForm() {
 		checkbox.type = "checkbox";
 		checkbox.value = mode;
 		label.addEventListener("click", updateURL, false);
-		
 		label.appendChild(checkbox);
 		label.appendChild(document.createTextNode(mode));
 		li.appendChild(label);
@@ -104,29 +152,44 @@ function check(/*"all"|"none"|Array*/ what) {
 	updateURL();
 }
 
-function focusUrl() {
-	var url = document.getElementById("url");
-	url.focus();
-	url.select();
-}
 
 window.onload = function() {
 	var hash = (window.location.hash).substring(1);
 	var toInstall = hash && hash.split("+");
 	toInstall = (toInstall && toInstall.length) ? toInstall : defaults;
-	console.debug("modes to install: [" + toInstall.join(",") + "]");
 	try {
+		var model = new orion.editor.MirrorTextModel();
+		var highlighter = new orion.codemirror.Highlighter(model);
+		
 		var provider = new eclipse.PluginProvider();
 		var serviceProvider = provider.registerServiceProvider("orion.edit.model", 
-			new orion.editor.MirrorTextModel,
-			{	types: ["ModelChanging"]
-			});
+			{	
+				onModelChanging: function(modelChangingEvent) {
+					model.onTargetModelChanging(modelChangingEvent);
+				}
+			},
+			{ types: ["ModelChanging"] });
 
-		// This is the part that will dispatch highlight updates on itself
-		var serviceProvider = provider.registerServiceProvider("orion.edit.highlight", {}, {});
-		provider.connect();
+		var highlightServiceProvider = provider.registerServiceProvider("orion.edit.highlighter",	// Needs to dispatch events
+			{
+				setExtension: function(extension) {
+					var modeSpec = getModeFor(extension);
+					CodeMirror.setOption("mode", modeSpec);
+					highlighter.loadMode(modeSpec);
+				}
+			},
+			{ type: "highlighter",
+			  fileTypes: getFileTypes(toInstall)
+			});
+		highlighter.addEventListener("StyleReady", function(styleReadyEvent) {
+			highlightServiceProvider.dispatchEvent("StyleReady", styleReadyEvent);
+		});
+		
+		provider.connect(function(e){
+			console.debug("orion-codemirror: connected. Supported modes: [" + toInstall.join(",") + "]");
+		});
 	} catch (e) {
-		console.debug("Couldn't install plugin: " + e);
+		console.debug("orion-codemirror: Couldn't install plugin: " + e);
 		createForm();
 		check(toInstall);
 		updateURL();
@@ -140,7 +203,9 @@ window.onload = function() {
 <a href="http://codemirror.net/manual.html#modeapi">modes</a>. See below for installation instructions.</p>
 
 <h2>Requirements</h2>
-<ul><li><a href="http://download.eclipse.org/orion/">Orion 0.4 M1</a></li></ul>
+<ul>
+	<li><a href="http://download.eclipse.org/orion/">Orion 0.4 M1</a></li>
+</ul>
 
 <h2>Installation</h2>
 <form>
@@ -153,7 +218,7 @@ window.onload = function() {
 			<button type="button" onclick="check('none')">Check None</button>
 			<button type="button" onclick="check(defaults)">Defaults</button></li>
 		<li>Copy the resulting URL from this box:<br>
-			<textarea id="url" type="text" onclick="focusUrl()" rows="1" wrap="off"></textarea>
+			<textarea id="url" type="text" onclick="this.focus(); this.select();" rows="1" wrap="off"></textarea>
 		</li>
 		<li>Log in to your Orion environment, go to the "Plugins" page, paste the URL into the "Install" field, and click Install.</li>
 		<li>????</li>
