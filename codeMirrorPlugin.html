@@ -28,7 +28,7 @@
 	<script src="lib/highlighter.js"></script>
 	<script>
 		// For compatibility with perl mode, which does naughty non-API things to CodeMirror.StringStream.prototype
-		CodeMirror.StringStream = orion.codeMirror.Stream;
+		CodeMirror.StringStream = orion.codemirror.Stream;
 	</script>
 	<!-- Mode scripts. TODO: inject <script> for selected modes only, or use requirejs -->
 	<script src="lib/codemirror2/mode/clike/clike.js"></script>
@@ -109,6 +109,14 @@ function getFileTypes(modes) {
 		}, []);
 }
 
+function getModeFor(extension) {
+	for (var modeName in fileExtensions) {
+		if (fileExtensions.hasOwnProperty(modeName) && fileExtensions[modeName] && fileExtensions[modeName].indexOf(extension) !== -1) {
+			return modeName;
+		}
+	}
+}
+
 function boxes() {
 	return Array.prototype.filter.call(document.getElementsByTagName("input"), function(i){ return i.type === "checkbox"; });
 }
@@ -144,25 +152,44 @@ function check(/*"all"|"none"|Array*/ what) {
 	updateURL();
 }
 
+
 window.onload = function() {
 	var hash = (window.location.hash).substring(1);
 	var toInstall = hash && hash.split("+");
 	toInstall = (toInstall && toInstall.length) ? toInstall : defaults;
-	console.debug("modes to install: [" + toInstall.join(",") + "]");
 	try {
+		var model = new orion.editor.MirrorTextModel();
+		var highlighter = new orion.codemirror.Highlighter(model);
+		
 		var provider = new eclipse.PluginProvider();
 		var serviceProvider = provider.registerServiceProvider("orion.edit.model", 
-			new orion.editor.MirrorTextModel,
+			{	
+				onModelChanging: function(modelChangingEvent) {
+					model.onTargetModelChanging(modelChangingEvent);
+				}
+			},
 			{ types: ["ModelChanging"] });
 
-		var serviceProvider2 = provider.registerServiceProvider("orion.edit.highlight",	// Needs to dispatch events
-			{},
+		var highlightServiceProvider = provider.registerServiceProvider("orion.edit.highlighter",	// Needs to dispatch events
+			{
+				setExtension: function(extension) {
+					var modeSpec = getModeFor(extension);
+					CodeMirror.setOption("mode", modeSpec);
+					highlighter.loadMode(modeSpec);
+				}
+			},
 			{ type: "highlighter",
 			  fileTypes: getFileTypes(toInstall)
 			});
-		provider.connect();
+		highlighter.addEventListener("StyleReady", function(styleReadyEvent) {
+			highlightServiceProvider.dispatchEvent("StyleReady", styleReadyEvent);
+		});
+		
+		provider.connect(function(e){
+			console.debug("orion-codemirror: connected. Supported modes: [" + toInstall.join(",") + "]");
+		});
 	} catch (e) {
-		console.debug("Couldn't install plugin: " + e);
+		console.debug("orion-codemirror: Couldn't install plugin: " + e);
 		createForm();
 		check(toInstall);
 		updateURL();
@@ -171,12 +198,14 @@ window.onload = function() {
 	</script>
 </head>
 <body>
-<h1>orion-sqor</h1>
+<h1>orion-codemirror</h1>
 <p>This is a plugin for Orion that provides syntax highlighting using <a href="https://github.com/marijnh/CodeMirror2">CodeMirror</a> 
 <a href="http://codemirror.net/manual.html#modeapi">modes</a>. See below for installation instructions.</p>
 
 <h2>Requirements</h2>
-<ul><li><a href="http://download.eclipse.org/orion/">Orion 0.4 M1</a></li></ul>
+<ul>
+	<li><a href="http://download.eclipse.org/orion/">Orion 0.4 M1</a></li>
+</ul>
 
 <h2>Installation</h2>
 <form>
