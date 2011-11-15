@@ -151,6 +151,10 @@ function check(/*"all"|"none"|Array*/ what) {
 	updateURL();
 }
 
+function regexEscape(s) {
+	return s.replace(/([\\$\^*\/+?\.\(\)|{}\[\]])/g, "\\$&");
+}
+
 
 window.onload = function() {
 	var hash = (window.location.hash).substring(1);
@@ -183,6 +187,14 @@ window.onload = function() {
 		highlighter.addEventListener("StyleReady", function(styleReadyEvent) {
 			highlightServiceProvider.dispatchEvent("StyleReady", styleReadyEvent);
 		});
+		
+		// Register file associations for installed modes
+		var fileExts = getFileTypes(toInstall).map(regexEscape).join("|");
+		provider.registerServiceProvider("orion.navigate.openWith", {},
+			{	name: "Orion web editor",
+				href: "../edit/edit.html#${Location}",
+				validationProperties: {Name: "*.(" + fileExts + ")"}
+			});
 		
 		provider.connect(function(e){
 			console.debug("orion-codemirror: connected. Supported modes: [" + toInstall.join(",") + "]");
