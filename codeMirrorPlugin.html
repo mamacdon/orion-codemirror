@@ -220,7 +220,7 @@ window.onload = function() {
 			  fileTypes: getFileTypes(toInstall)
 			});
 		highlighter.addEventListener("StyleReady", function(styleReadyEvent) {
-			highlightServiceProvider.dispatchEvent("StyleReady", styleReadyEvent);
+			highlightServiceProvider.dispatchEvent("orion.edit.highlighter.styleReady", styleReadyEvent);
 		});
 		
 		// Register file associations for installed modes
