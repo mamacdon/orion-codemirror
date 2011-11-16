@@ -137,7 +137,7 @@ function updateURL() {
 	var base = window.location.href.replace(window.location.hash, "");
 	var q = boxes().map(function(box) { return box.checked && box.value; }).filter(function(b) { return !!b; });
 	var hash = q.join("+");
-	document.getElementById("url").value = base + hash;
+	document.getElementById("url").value = base + (base[base.length-1] !== "#" ? "#" : "") + hash;
 	window.location.hash = hash;
 }
 
