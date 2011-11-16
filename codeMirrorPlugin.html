@@ -3,7 +3,7 @@
 <head>
 	<title>orion-codemirror plugin</title>
 	<style type="text/css">
-		ul#modelist {
+		ul.modelist {
 			list-style-type: none;
 			column-count: 3;
 			-moz-column-count: 3;
@@ -11,11 +11,15 @@
 			width: 40em;
 		}
 		ol>li { margin-bottom: 1em; }
-		#url {	
+		.url {
 			width: 60em;
 			font-family: monospace;
 			background: #ddd;
 			padding: 15px;
+			white-space: nowrap;
+			overflow-x: scroll;
+			/*overflow-y: hidden;*/
+			overflow: -moz-scrollbars-horizontal;
 		}
 	</style>
 	<script src="http://orionhub.org/orion/plugin.js"></script>
@@ -232,18 +236,23 @@ window.onload = function() {
 	<ol>
 		<li>Check the modes that you want to enable support for:
 			<div class="cols">
-				<ul id="modelist"></ul>
+				<ul id="modelist" class="modelist"></ul>
 			</div>
 			<button type="button" onclick="check('all')">Check All</button>
 			<button type="button" onclick="check('none')">Check None</button>
 			<button type="button" onclick="check(defaults)">Defaults</button></li>
 		<li>Copy the resulting URL from this box:<br>
-			<textarea id="url" type="text" onclick="this.focus(); this.select();" rows="1" wrap="off"></textarea>
+			<textarea id="url" class="url" type="text" onclick="this.focus(); this.select();" rows="1" wrap="off"></textarea>
 		</li>
 		<li>Log in to your Orion environment, go to the "Plugins" page, paste the URL into the "Install" field, and click Install.</li>
-		<li>????</li>
-		<li>Profit</li>
 	</ol>
 </form>
+
+<h2>Usage</h2>
+<ol>
+  <li>In Orion, go to the Navigator page.</li>
+  <li>Create a new file with an extension corresponding to one of the modes you installed. (For example, <code>test.php</code> if you installed PHP mode). Click on it.</li>
+  <li>You'll be taken to an editing page. Type some (valid) code in the editor, and it will be syntax-colored.</li>
+</ol>
 </body>
 </html>
