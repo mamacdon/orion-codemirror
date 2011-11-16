@@ -37,7 +37,6 @@
 	<script src="lib/codemirror2/mode/diff/diff.js"></script>
 	<script src="lib/codemirror2/mode/groovy/groovy.js"></script>
 	<script src="lib/codemirror2/mode/haskell/haskell.js"></script>
-	<script src="lib/codemirror2/mode/htmlmixed/htmlmixed.js"></script>
 	<script src="lib/codemirror2/mode/javascript/javascript.js"></script>
 	<script src="lib/codemirror2/mode/jinja2/jinja2.js"></script>
 	<script src="lib/codemirror2/mode/lua/lua.js"></script>
@@ -60,60 +59,70 @@
 	<script src="lib/codemirror2/mode/velocity/velocity.js"></script>
 	<script src="lib/codemirror2/mode/xml/xml.js"></script>
 	<script src="lib/codemirror2/mode/xmlpure/xmlpure.js"></script>
+	<script src="lib/codemirror2/mode/htmlmixed/htmlmixed.js"></script> <!-- must load after xml to grab text/html MIME -->
 	<script src="lib/codemirror2/mode/yaml/yaml.js"></script>
 	<!-- END -->
 	<script>
 	var modes = ["clike", "clojure", "coffeescript", "css", "diff", "groovy", "haskell", "htmlmixed", "javascript", "jinja2", "lua", "markdown", "ntriples", "pascal", "perl", "php", "plsql", "python", "r", "rst", "ruby", "rust", "scheme", "smalltalk", "sparql", "stex", "tiddlywiki", "velocity", "xml", "xmlpure", "yaml"];
 var defaults = ["clike", "css", "htmlmixed", "javascript", "markdown", "perl", "php", "ruby", "xml"];
 //var required = ["clike"]; // TODO some modes depend on others (eg. htmlmixed -> css)
-var fileExtensions = {
-	// TODO this is clumsy. Orion needs MIME support somewhere
-	"clike": ["c", "C", "cc", "cpp", "c++", "h"],
-	"clojure": ["clj"],
-	"coffeescript": ["cs"],
-	"css": ["css"],
-	"diff": [],
-	"groovy": ["groovy"],
-	"haskell": ["hs"],
-	"htmlmixed": ["html", "htm"],
-	"javascript": ["js"],
+
+var mime2Ext = {
+	"text/x-csrc": ["c", "C", "h"],
+	"text/x-c++src": ["cc", "cpp", "c++"],
+	"text/x-clojure": ["clj"],
+	"text/x-coffeescript": ["cs"],
+	"text/css": ["css"],
+	"text/x-diff": [],
+	"text/x-groovy": ["groovy"],
+	"text/x-haskell": ["hs"],
+	"text/html": ["html", "htm"],
+	"text/x-java": ["java"],
+	"text/javascript": ["js"],
+	"application/json": ["json"],
 	"jinja2": [],
 	"lua": ["lua"],
-	"markdown": ["md"],
-	"ntriples": ["nt"],
-	"pascal": [],
-	"perl": [],
-	"php": ["php", "php3", "php4", "php5", "phtml"],
-	"plsql": ["sql"],
-	"python": ["py"],
-	"r": ["r"],
-	"rst": ["rst"],
-	"ruby": ["rb"],
-	"rust": ["rs", "rc"],
-	"scheme": ["scm", "ss"],
-	"smalltalk": ["sm"],
-	"sparql": ["spk"],
-	"stex": [],
-	"tiddlywiki": [],
-	"velocity": [],
-	"xml": ["xml"],
-	"xmlpure": [],
-	"yaml": ["yaml"]
+	"text/x-markdown": ["md"],
+	"text/n-triples": ["nt"],
+	"text/x-pascal": ["pascal", "p"],
+	"text/x-perl": ["pl"],
+	"text/x-php": ["php", "php3", "php4", "php5"],
+	"application/x-httpd-php": ["phtml"],
+	"text/x-plsql": ["sql"],
+	"text/x-python": ["py"],
+	"text/x-rsrc": ["r"],
+	"text/x-rst": ["rst"],
+	"text/x-ruby": ["rb"],
+	"text/x-rust": ["rs", "rc"],
+	"text/x-scheme": ["scm", "ss"],
+	"text/x-stsrc": ["sm"],
+	"application/x-sparql-query": ["spk"],
+	"text/stex": [],
+	"text/x-tiddlywiki": [],
+	"text/velocity": [],
+	"text/xml": ["xml"],
+	/*"application/xml": ["xml"],*/
+	"text/x-yaml": ["yaml"]
 };
+var ext2Mime = {};
+for (var mime in mime2Ext) {
+	if (!(mime2Ext.hasOwnProperty(mime))) { continue; }
+	var exts = mime2Ext[mime];
+	for (var i=0; i < exts.length; i++) {
+		var ext = exts[i];
+		ext2Mime[ext] = mime;
+	}
+}
 
 function getFileTypes(modes) {
-	return modes.reduce(function(prev, modeName) {
-			Array.prototype.push.apply(prev, fileExtensions[modeName]);
+	return CodeMirror.listMIMEs().reduce(function(prev, mime) {
+			Array.prototype.push.apply(prev, mime2Ext[mime]);
 			return prev;
 		}, []);
 }
 
-function getModeFor(extension) {
-	for (var modeName in fileExtensions) {
-		if (fileExtensions.hasOwnProperty(modeName) && fileExtensions[modeName] && fileExtensions[modeName].indexOf(extension) !== -1) {
-			return modeName;
-		}
-	}
+function getMimeFor(ext) {
+	return ext2Mime[ext];
 }
 
 function boxes() {
@@ -176,9 +185,9 @@ window.onload = function() {
 		var highlightServiceProvider = provider.registerServiceProvider("orion.edit.highlighter",	// Needs to dispatch events
 			{
 				setExtension: function(extension) {
-					var modeSpec = getModeFor(extension);
-					CodeMirror.setOption("mode", modeSpec);
-					highlighter.loadMode(modeSpec);
+					var mime = getMimeFor(extension);
+					//CodeMirror.setOption("mode", mime);
+					highlighter.loadMode(mime);
 				}
 			},
 			{ type: "highlighter",
