@@ -22,7 +22,7 @@
 			overflow: -moz-scrollbars-horizontal;
 		}
 	</style>
-	<script src="http://orionhub.org/orion/plugin.js"></script>
+	<script src="lib/orion/plugin.js"></script>
 	<script src="lib/orion/global.js"></script>
 	<script src="lib/orion/eventTarget.js"></script>
 	<script src="lib/orion/textModel.js"></script>
@@ -67,17 +67,19 @@
 	<script src="lib/codemirror2/mode/yaml/yaml.js"></script>
 	<!-- END -->
 	<script>
-	var modes = ["clike", "clojure", "coffeescript", "css", "diff", "groovy", "haskell", "htmlmixed", "javascript", "jinja2", "lua", "markdown", "ntriples", "pascal", "perl", "php", "plsql", "python", "r", "rst", "ruby", "rust", "scheme", "smalltalk", "sparql", "stex", "tiddlywiki", "velocity", "xml", "xmlpure", "yaml"];
-var defaults = ["clike", "css", "htmlmixed", "javascript", "markdown", "perl", "php", "ruby", "xml"];
-//var required = ["clike"]; // TODO some modes depend on others (eg. htmlmixed -> css)
-
+var modes = ["clike", "clojure", "coffeescript", "css", "diff", "groovy", "haskell", "htmlmixed", "javascript", "jinja2", "lua", "markdown", "ntriples", "pascal", "perl", "php", "plsql", "python", "r", "rst", "ruby", "rust", "scheme", "smalltalk", "sparql", "stex", "tiddlywiki", "velocity", "xml", "xmlpure", "yaml"];
+var defaults = ["clike", "css", "htmlmixed", "javascript", "perl", "php", "ruby", "xml"];
+var deps = {
+	"htmlmixed": ["css", "xml", "javascript"],
+	"php": ["clike", "css", "javascript", "xml"]
+};
 var mime2Ext = {
 	"text/x-csrc": ["c", "C", "h"],
 	"text/x-c++src": ["cc", "cpp", "c++"],
 	"text/x-clojure": ["clj"],
 	"text/x-coffeescript": ["cs"],
 	"text/css": ["css"],
-	"text/x-diff": [],
+	"text/x-diff": ["diff", "patch"],
 	"text/x-groovy": ["groovy"],
 	"text/x-haskell": ["hs"],
 	"text/html": ["html", "htm"],
@@ -108,14 +110,20 @@ var mime2Ext = {
 	/*"application/xml": ["xml"],*/
 	"text/x-yaml": ["yaml"]
 };
-var ext2Mime = {};
-for (var mime in mime2Ext) {
-	if (!(mime2Ext.hasOwnProperty(mime))) { continue; }
-	var exts = mime2Ext[mime];
-	for (var i=0; i < exts.length; i++) {
-		var ext = exts[i];
-		ext2Mime[ext] = mime;
+var ext2Mime = invert(mime2Ext);
+
+// Invert 1:1 map whose values are arrays
+function invert(obj) {
+	var result = {};
+	for (var key in obj) {
+		if (!(obj.hasOwnProperty(key))) { continue; }
+		var arr = obj[key];
+		for (var i=0; i < arr.length; i++) {
+			var val = arr[i];
+			result[val] = key;
+		}
 	}
+	return result;
 }
 
 function getFileTypes(modes) {
@@ -149,11 +157,24 @@ function createForm() {
 		var checkbox = document.createElement("input");
 		checkbox.type = "checkbox";
 		checkbox.value = mode;
-		label.addEventListener("click", updateURL, false);
+		label.addEventListener("click", onBoxClick, false);
 		label.appendChild(checkbox);
 		label.appendChild(document.createTextNode(mode));
 		li.appendChild(label);
 		list.appendChild(li);
+	});
+}
+
+function onBoxClick(e) {
+	if (e.target.tagName === "LABEL") { return; }
+	var box = e.target;
+	if (deps[box.value]) { add(deps[box.value], true); }
+	updateURL();
+}
+
+function add(what) {
+	boxes().forEach(function(box) {
+		box.checked = box.checked || what.indexOf(box.value) !== -1;
 	});
 }
 
@@ -168,6 +189,7 @@ function regexEscape(s) {
 	return s.replace(/([\\$\^*\/+?\.\(\)|{}\[\]])/g, "\\$&");
 }
 
+function errback(e) { console.debug("orion-codemirror: Couldn't install plugin: " + e); }
 
 window.onload = function() {
 	var hash = (window.location.hash).substring(1);
@@ -211,13 +233,14 @@ window.onload = function() {
 		
 		provider.connect(function(e){
 			console.debug("orion-codemirror: connected. Supported modes: [" + toInstall.join(",") + "]");
-		});
+		}, errback);
 	} catch (e) {
-		console.debug("orion-codemirror: Couldn't install plugin: " + e);
-		createForm();
-		check(toInstall);
-		updateURL();
+		errback(e);
 	}
+	
+	createForm();
+	check(toInstall);
+	updateURL();
 };
 	</script>
 </head>
