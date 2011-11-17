@@ -127,7 +127,14 @@ function invert(obj) {
 }
 
 function getFileTypes(modes) {
-	return CodeMirror.listMIMEs().reduce(function(prev, mime) {
+	// A mime passes this filter only if it's contributed by a mode in modes
+	function onlyCheckedMimes(mime) {
+		var mname = CodeMirror._getModeName(mime);
+		return modes.indexOf(mname) !== -1;
+	}
+	return CodeMirror.listMIMEs()
+		.filter(onlyCheckedMimes)
+		.reduce(function(prev, mime) {
 			Array.prototype.push.apply(prev, mime2Ext[mime]);
 			return prev;
 		}, []);
