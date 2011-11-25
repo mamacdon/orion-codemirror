@@ -21,7 +21,7 @@ Uninstalling
 
 Requirements
 ------------
-* Orion 0.4 M1
+* Orion 0.4
 
 License
 -------
