@@ -34,39 +34,8 @@
 		// For compatibility with perl mode, which does naughty non-API things to CodeMirror.StringStream
 		CodeMirror.StringStream = orion.codemirror.Stream;
 	</script>
-	<!-- Mode scripts. TODO: inject <script> for selected modes only, or use requirejs -->
-	<script src="lib/codemirror2/mode/clike/clike.js"></script>
-	<script src="lib/codemirror2/mode/clojure/clojure.js"></script>
-	<script src="lib/codemirror2/mode/coffeescript/coffeescript.js"></script>
-	<script src="lib/codemirror2/mode/css/css.js"></script>
-	<script src="lib/codemirror2/mode/diff/diff.js"></script>
-	<script src="lib/codemirror2/mode/groovy/groovy.js"></script>
-	<script src="lib/codemirror2/mode/haskell/haskell.js"></script>
-	<script src="lib/codemirror2/mode/javascript/javascript.js"></script>
-	<script src="lib/codemirror2/mode/jinja2/jinja2.js"></script>
-	<script src="lib/codemirror2/mode/lua/lua.js"></script>
-	<script src="lib/codemirror2/mode/markdown/markdown.js"></script>
-	<script src="lib/codemirror2/mode/ntriples/ntriples.js"></script>
-	<script src="lib/codemirror2/mode/pascal/pascal.js"></script>
-	<script src="lib/codemirror2/mode/perl/perl.js"></script>
-	<script src="lib/codemirror2/mode/php/php.js"></script>
-	<script src="lib/codemirror2/mode/plsql/plsql.js"></script>
-	<script src="lib/codemirror2/mode/python/python.js"></script>
-	<script src="lib/codemirror2/mode/r/r.js"></script>
-	<script src="lib/codemirror2/mode/rst/rst.js"></script>
-	<script src="lib/codemirror2/mode/ruby/ruby.js"></script>
-	<script src="lib/codemirror2/mode/rust/rust.js"></script>
-	<script src="lib/codemirror2/mode/scheme/scheme.js"></script>
-	<script src="lib/codemirror2/mode/smalltalk/smalltalk.js"></script>
-	<script src="lib/codemirror2/mode/sparql/sparql.js"></script>
-	<script src="lib/codemirror2/mode/stex/stex.js"></script>
-	<script src="lib/codemirror2/mode/tiddlywiki/tiddlywiki.js"></script>
-	<script src="lib/codemirror2/mode/velocity/velocity.js"></script>
-	<script src="lib/codemirror2/mode/xml/xml.js"></script>
-	<script src="lib/codemirror2/mode/xmlpure/xmlpure.js"></script>
-	<script src="lib/codemirror2/mode/htmlmixed/htmlmixed.js"></script> <!-- must load after xml to grab text/html MIME -->
-	<script src="lib/codemirror2/mode/yaml/yaml.js"></script>
-	<!-- END -->
+	<script src="lib/codemirror2-compressed/modes-compressed.js"></script>
+	<script src="lib/codemirror2/mode/htmlmixed/htmlmixed.js"></script> <!-- steal text/html back from xml mode (FIXME) -->
 	<script>
 /*global console eclipse CodeMirror orion window*/
 // Invert 1:1 map
