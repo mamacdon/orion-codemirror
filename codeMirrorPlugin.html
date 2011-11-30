@@ -30,6 +30,7 @@
 	<script src="lib/mirror.js"></script>
 	<script src="lib/highlighter.js"></script>
 	<script>
+		/*global CodeMirror orion*/
 		// For compatibility with perl mode, which does naughty non-API things to CodeMirror.StringStream
 		CodeMirror.StringStream = orion.codemirror.Stream;
 	</script>
@@ -67,7 +68,26 @@
 	<script src="lib/codemirror2/mode/yaml/yaml.js"></script>
 	<!-- END -->
 	<script>
-/*global console CodeMirror orion window*/
+/*global console eclipse CodeMirror orion window*/
+// Invert 1:1 map
+function invert(obj) {
+	var result = {};
+	for (var key in obj) {
+		if (obj.hasOwnProperty(key)) {
+			var arr = obj[key];
+			if (arr instanceof Array) {
+				for (var i=0; i < arr.length; i++) {
+					var val = arr[i];
+					result[val] = key;
+				}
+			} else {
+				result[arr] = key;
+			}
+		}
+	}
+	return result;
+}
+
 var modes = ["clike", "clojure", "coffeescript", "css", "diff", "groovy", "haskell", "htmlmixed", "javascript", "jinja2", "lua", "markdown", "ntriples", "pascal", "perl", "php", "plsql", "python", "r", "rst", "ruby", "rust", "scheme", "smalltalk", "sparql", "stex", "tiddlywiki", "velocity", "xml", "xmlpure", "yaml"];
 var defaults = ["clike", "css", "htmlmixed", "javascript", "perl", "php", "ruby", "xml"];
 var deps = {
@@ -153,24 +173,6 @@ var mime2Ext = {
 };
 var ext2Mime = invert(mime2Ext);
 
-// Invert 1:1 map
-function invert(obj) {
-	var result = {};
-	for (var key in obj) {
-		if (obj.hasOwnProperty(key)) {
-			var arr = obj[key];
-			if (arr instanceof Array) {
-				for (var i=0; i < arr.length; i++) {
-					var val = arr[i];
-					result[val] = key;
-				}
-			} else {
-				result[arr] = key;
-			}
-		}
-	}
-	return result;
-}
 function getMime(contentType) {
 	return contentType2Mime[contentType.id];
 }
@@ -194,7 +196,7 @@ function getFileTypes(modes) {
 // Create Orion content types for modes
 function getContentTypes(modes) {
 	return getMimes(modes).map(function(mime) {
-		// Turn it into a phony content type
+		// Turn it into a content type (some may already be defined, like text.html)
 		return {
 			id: getContentTypeId(mime),
 			extension: mime2Ext[mime],
@@ -202,11 +204,9 @@ function getContentTypes(modes) {
 		};
 	});
 }
-
 function boxes() {
 	return Array.prototype.filter.call(document.getElementsByTagName("input"), function(i){ return i.type === "checkbox"; });
 }
-
 function updateURL() {
 	var base = window.location.href.replace(window.location.hash, "");
 	var q = boxes().map(function(box) { return box.checked && box.value; }).filter(function(b) { return !!b; });
@@ -219,14 +219,12 @@ function add(what) {
 		box.checked = box.checked || what.indexOf(box.value) !== -1;
 	});
 }
-
 function onBoxClick(e) {
 	if (e.target.tagName === "LABEL") { return; }
 	var box = e.target;
 	if (deps[box.value]) { add(deps[box.value], true); }
 	updateURL();
 }
-
 function createForm() {
 	var list = document.getElementById("modelist");
 	modes.forEach(function(mode) {
