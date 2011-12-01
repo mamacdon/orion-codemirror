@@ -84,7 +84,7 @@ var mime2ContentType = {
 	"text/x-pascal": "text.pascal",
 	"text/x-perl": "text.perl",
 	"text/x-php": "text.php",
-	"application/x-httpd-php": "text.derp",
+	"application/x-httpd-php": "text.html+php",
 	"text/x-plsql": "text.plsql",
 	"text/x-python": "text.python",
 	"text/x-rsrc": "text.r",
@@ -166,12 +166,13 @@ function getFileTypes(modes) {
 function getContentTypes(modes) {
 	return getMimes(modes).map(function(mime) {
 		// Turn it into a content type (some may already be defined, like text.html)
-		return {
-			id: getContentTypeId(mime),
+		var id = getContentTypeId(mime);
+		return id && {
+			id: id,
 			extension: mime2Ext[mime],
 			"extends": "text.plain"
 		};
-	});
+	}).filter(function(ct) { return !!ct; });
 }
 function boxes() {
 	return Array.prototype.filter.call(document.getElementsByTagName("input"), function(i){ return i.type === "checkbox"; });
