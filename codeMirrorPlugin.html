@@ -231,6 +231,7 @@ window.onload = function() {
 	try {
 		var model = new orion.editor.MirrorTextModel();
 		var highlighter = new orion.codemirror.Highlighter(model);
+		var contentTypes = getContentTypes(modeSet);
 		
 		var provider = new eclipse.PluginProvider();
 		var serviceProvider = provider.registerServiceProvider("orion.edit.model", 
@@ -239,10 +240,11 @@ window.onload = function() {
 					model.onTargetModelChanging(modelChangingEvent);
 				}
 			},
-			{ types: ["ModelChanging"] });
+			{ types: ["ModelChanging"],
+			  contentType: contentTypes
+			});
 		
 		// Register editor associations for installed modes
-		var contentTypes = getContentTypes(modeSet);
 		provider.registerServiceProvider("orion.file.contenttype", {},
 			{	contentTypes: contentTypes
 			});
