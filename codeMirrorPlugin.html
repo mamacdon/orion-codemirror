@@ -240,7 +240,7 @@ window.onload = function() {
 					model.onTargetModelChanging(modelChangingEvent);
 				},
 				onScroll: function(scrollEvent) {
-					highlighter.setViewportIndex(scrollEvent.topIndex);
+					highlighter.setViewportIndex(scrollEvent.topIndex, scrollEvent.bottomIndex);
 				}
 			},
 			{ types: ["ModelChanging", "Scroll"],
