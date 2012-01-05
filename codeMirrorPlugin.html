@@ -22,22 +22,26 @@
 			overflow: '-moz-scrollbars-horizontal';
 		}
 	</style>
+	<!-- We use the global.js shim instead of AMD for simplicity -->
 	<script src="lib/orion/plugin.js"></script>
 	<script src="lib/orion/global.js"></script>
 	<script src="lib/orion/eventTarget.js"></script>
 	<script src="lib/orion/textModel.js"></script>
-	<script src="lib/mirrorTextModel.js"></script>
-	<script src="lib/mirror.js"></script>
-	<script src="lib/highlighter.js"></script>
+	<script src="lib/orion/mirror.js"></script>
+	
+	<script src="lib/orioncodemirror/mirrorTextModel.js"></script>
+	<script src="lib/orioncodemirror/highlighter.js"></script>
 	<script>
-		/*global CodeMirror orion*/
-		// For compatibility with perl mode, which does naughty non-API things to CodeMirror.StringStream
-		CodeMirror.StringStream = orion.codemirror.Stream;
+		/*global window orion*/
+		// Expose Orion's implementation of CodeMirror API as the global CodeMirror object since the modes
+		// we're about to load require it.
+		var mirror;
+		window.CodeMirror = mirror = new orion.editor.Mirror();
 	</script>
 	<script src="lib/codemirror2-compressed/modes-compressed.js"></script>
-	<script src="lib/codemirror2/mode/htmlmixed/htmlmixed.js"></script> <!-- steal text/html back from xml mode (FIXME) -->
+	<script src="lib/codemirror2/mode/htmlmixed/htmlmixed.js"></script> <!-- steal text/html MIME back from xml mode -->
 	<script>
-/*global console eclipse CodeMirror orion window*/
+/*global console eclipse CodeMirror orioncodemirror window*/
 // Invert 1:1 map
 function invert(obj) {
 	var result = {};
@@ -229,8 +233,8 @@ window.onload = function() {
 	var modeSet = hash && hash.split("+");
 	modeSet = (modeSet && modeSet.length) ? modeSet : defaults; // modeSet to install
 	try {
-		var model = new orion.editor.MirrorTextModel();
-		var highlighter = new orion.codemirror.Highlighter(model);
+		var model = new orioncodemirror.MirrorTextModel();
+		var highlighter = new orioncodemirror.Highlighter(model, mirror);
 		var contentTypes = getContentTypes(modeSet);
 		
 		var provider = new eclipse.PluginProvider();
@@ -260,8 +264,7 @@ window.onload = function() {
 			{	setContentType: function(contentType) {
 					var mime = getMime(contentType);
 					if (mime) {
-						//CodeMirror.setOption("mode", mime);
-						highlighter.loadMode(mime);
+						highlighter.setMode(mime);
 					} else {
 						console.debug("Missing MIME in content type " + contentType.id);
 					}
