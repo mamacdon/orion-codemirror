@@ -226,7 +226,7 @@ function regexEscape(s) {
 	return s.replace(/([\\$\^*\/+?\.\(\)|{}\[\]])/g, "\\$&");
 }
 
-function errback(e) { console.debug("orion-codemirror: Couldn't install plugin: " + e); }
+function errback(e) { console.log("orion-codemirror: Couldn't install plugin: " + e); }
 
 window.onload = function() {
 	var hash = (window.location.hash).substring(1);
@@ -266,7 +266,7 @@ window.onload = function() {
 					if (mime) {
 						highlighter.setMode(mime);
 					} else {
-						console.debug("Missing MIME in content type " + contentType.id);
+						console.log("Missing MIME in content type " + contentType.id);
 					}
 				}
 			},
@@ -278,7 +278,7 @@ window.onload = function() {
 		});
 		
 		provider.connect(function(e){
-			console.debug("orion-codemirror: connected. Supported modes: [" + modeSet.join(",") + "]");
+			console.log("orion-codemirror: connected. Supported modes: [" + modeSet.join(",") + "]");
 		}, errback);
 	} catch (e) {
 		errback(e);
