@@ -159,13 +159,6 @@ function getMimes(modes) {
 			return modes.indexOf(mname) !== -1;
 		});
 }
-// TODO this can go away once highlighter service is not extension-dependent
-function getFileTypes(modes) {
-		return getMimes(modes).reduce(function(prev, mime) {
-			Array.prototype.push.apply(prev, mime2Ext[mime]);
-			return prev;
-		}, []);
-}
 // Create Orion content types for modes
 function getContentTypes(modes) {
 	return getMimes(modes).map(function(mime) {
@@ -271,7 +264,7 @@ window.onload = function() {
 				}
 			},
 			{ type: "highlighter",
-			  fileTypes: getFileTypes(modeSet)
+			  contentType: contentTypes
 			});
 		highlighter.addEventListener("StyleReady", function(styleReadyEvent) {
 			highlightServiceProvider.dispatchEvent("orion.edit.highlighter.styleReady", styleReadyEvent);
