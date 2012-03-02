@@ -44,17 +44,11 @@
 <h2>Installation</h2>
 <form>
 	<ol>
-		<li>Check the modes that you want to enable support for:
-			<div class="cols">
-				<ul id="modelist" class="modelist"></ul>
-			</div>
-			<button type="button" onclick="check('all');">Check All</button>
-			<button type="button" onclick="check('none');">Check None</button>
-			<button type="button" onclick="check(defaults);">Defaults</button></li>
-		<li>Copy the resulting URL from this box:<br>
+		<li>Copy the following URL:<br>
 			<textarea id="url" class="url" type="text" onclick="this.focus(); this.select();" rows="1" wrap="off"></textarea>
 		</li>
-		<li>Log in to your Orion environment, go to the "Plugins" page, paste the URL into the "Install" field, and click Install.</li>
+		<li>Log in to your Orion environment, and click the "Settings" link on the top banner.</li>
+		<li>Select the "Plugins" category, click "Install", paste the URL into the field, and click "Submit".</li>
 	</ol>
 </form>
 
@@ -64,5 +58,10 @@
   <li>Create a new file with an extension corresponding to one of the modes you installed. (For example, <code>test.php</code> if you installed PHP mode). Click on it.</li>
   <li>You'll be taken to an editing page. Type some (valid) code in the editor, and it will be syntax-colored.</li>
 </ol>
+
+<h2>Supported Modes</h2>
+<div class="cols">
+        <ul id="modelist" class="modelist"></ul>
+</div>
 </body>
 </html>
