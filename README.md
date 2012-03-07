@@ -18,7 +18,7 @@ Uninstalling
 ------------
 1. Log in to Orion and click the **Settings** link on the global toolbar.
 2. Click the **Plugins** category.
-3. Find the **Code Mirror** entry from the plugin list, then click the Uninstall button beside it.
+3. Find the **Code Mirror** entry from the plugin list, then click the Delete button beside it.
 
 Requirements
 ------------
