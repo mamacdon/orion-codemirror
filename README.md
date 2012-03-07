@@ -16,8 +16,9 @@ Installing from source
 
 Uninstalling
 ------------
-1. Log in to Orion and click the Plugins link on the global toolbar.
-2. Select the ```codeMirrorPlugin.html``` entry from the plugin list, then click Uninstall.
+1. Log in to Orion and click the **Settings** link on the global toolbar.
+2. Click the **Plugins** category.
+3. Find the **Code Mirror** entry from the plugin list, then click the Uninstall button beside it.
 
 Requirements
 ------------
@@ -25,4 +26,4 @@ Requirements
 
 License
 -------
-[Eclipse Distribution License v 1.0](http://www.eclipse.org/org/documents/edl-v10.html). See ```LICENSE```.
+[Eclipse Distribution License v 1.0](http://www.eclipse.org/org/documents/edl-v10.html). See the ```LICENSE``` file that accompanies this README.
