@@ -26,7 +26,10 @@
 	<script>
 		/*global require*/
 		require.config({
-			baseUrl: 'lib/'
+			baseUrl: 'lib/',
+			paths: {
+				i18n: 'requirejs/i18n',
+			}
 		});
 		require(['./codeMirrorPlugin']);
 	</script>
