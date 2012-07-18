@@ -1,0 +1,13 @@
+/*******************************************************************************
+ * @license
+ * Copyright (c) 2011 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials are made 
+ * available under the terms of the Eclipse Public License v1.0 
+ * (http://www.eclipse.org/legal/epl-v10.html), and the Eclipse Distribution 
+ * License v1.0 (http://www.eclipse.org/org/documents/edl-v10.html). 
+ *
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *******************************************************************************/
+
+var eclipse=eclipse||{};eclipse.ServiceProvider=function(e,t){this.dispatchEvent=function(n){t.dispatchEvent.apply(t,[e,n].concat(Array.prototype.slice.call(arguments,1)))},this.unregister=function(){t.unregisterServiceProvider(e)}},eclipse.PluginProvider=function(e){function s(e){i&&i.postMessage(window.ArrayBuffer?e:JSON.stringify(e),"*")}function u(){var e=[];for(var r=0;r<n.length;r++)n[r]&&e.push({serviceId:r,type:n[r].type,methods:n[r].methods,properties:n[r].properties});return{services:e,metadata:t||{}}}function a(e){if(e.source!==i)return;var t=typeof e.data!="string"?e.data:JSON.parse(e.data),r=t.serviceId,o=n[r].implementation,u=o[t.method],a={id:t.id,result:null,error:null};try{var f=u.apply(o,t.params);f&&typeof f.then=="function"?f.then(function(e){a.result=e,s(a)},function(e){a.error=e?JSON.parse(JSON.stringify(e)):e,s(a)},function(){s({requestId:t.id,method:"progress",params:Array.prototype.slice.call(arguments)})}):(a.result=f,s(a))}catch(l){a.error=l?JSON.parse(JSON.stringify(l)):l,s(a)}}var t=e,n=[],r=!1,i=null,o={dispatchEvent:function(e,t){if(!r)throw new Error("Cannot dispatchEvent. Plugin Provider not connected");var n={serviceId:e,method:"dispatchEvent",params:[t].concat(Array.prototype.slice.call(arguments,2))};s(n)},unregisterServiceProvider:function(e){if(r)throw new Error("Cannot unregister. Plugin Provider is connected");n[e]=null}};this.registerServiceProvider=function(e,t,i){if(r)throw new Error("Cannot register. Plugin Provider is connected");var s=null,u=[];for(s in t)typeof t[s]=="function"&&u.push(s);var a=n.length;return n[a]={type:e,methods:u,implementation:t,properties:i||{}},new eclipse.ServiceProvider(a,o)},this.connect=function(e,t){if(r){e&&e();return}if(!window)i=self;else if(window!==window.parent)i=window.parent;else{if(window.opener===null){t&&t("No valid plugin target");return}i=window.opener}addEventListener("message",a,!1);var n={method:"plugin",params:[u()]};s(n),r=!0,e&&e()},this.disconnect=function(){r&&(removeEventListener("message",a),i=null,r=!1)}}
