@@ -3,19 +3,19 @@ var registerPlugin;
 require([
 		'orion/plugin', 'orion/textview/eventTarget', 'orion/textview/textModel', 'orion/editor/mirror',
 		'orioncodemirror/mirrorTextModel', 'orioncodemirror/highlighter'],
-	function(mPlugin, mEventTarget, mTextModel, mMirror, mMirrorTextModel, mHighlighter) {
+	function(PluginProvider, mEventTarget, mTextModel, mMirror, mMirrorTextModel, mHighlighter) {
 		// Expose Orion's implementation of CodeMirror API as the global CodeMirror object, since it's
 		// needed by the CodeMirror modes that we are about to load.
 		window.CodeMirror = new mMirror.Mirror();
 
 		require(['codemirror2-compressed/modes-compressed'],
 			function(mModes) {
-				registerPlugin(mEventTarget, mTextModel, mMirror, mMirrorTextModel, mHighlighter, window.CodeMirror);
+				registerPlugin(PluginProvider, mEventTarget, mTextModel, mMirror, mMirrorTextModel, mHighlighter, window.CodeMirror);
 			});
 });
 
-registerPlugin = function(mEventTarget, mTextModel, mMirror, mMirrorTextModel, mHighlighter, mirror) {
-	/*global console eclipse CodeMirror window*/
+registerPlugin = function(PluginProvider, mEventTarget, mTextModel, mMirror, mMirrorTextModel, mHighlighter, mirror) {
+	/*global console CodeMirror window*/
 	// Invert 1:1 map
 	function invert(obj) {
 		var result = {};
@@ -129,8 +129,8 @@ registerPlugin = function(mEventTarget, mTextModel, mMirror, mMirrorTextModel, m
 			var highlighter = new mHighlighter.Highlighter(model, mirror);
 			var contentTypes = getContentTypes(modeSet);
 			
-			var provider = new eclipse.PluginProvider();
-			provider.registerServiceProvider("orion.edit.model", 
+			var provider = new PluginProvider();
+			provider.registerService("orion.edit.model", 
 				{	
 					onModelChanging: function(modelChangingEvent) {
 						model.onTargetModelChanging(modelChangingEvent);
@@ -144,29 +144,34 @@ registerPlugin = function(mEventTarget, mTextModel, mMirror, mMirrorTextModel, m
 				});
 			
 			// Register editor associations for installed modes
-			provider.registerServiceProvider("orion.file.contenttype", {},
+			provider.registerService("orion.file.contenttype", {},
 				{	contentTypes: contentTypes
 				});
-			provider.registerServiceProvider("orion.navigate.openWith", {},
+			provider.registerService("orion.navigate.openWith", {},
 				{	editor: "orion.editor",
 					contentType: contentTypes.map(function(ct) { return ct.id; })
 				});
 	
-			var highlightServiceProvider = provider.registerServiceProvider("orion.edit.highlighter",
-				{	setContentType: function(contentType) {
-						var mime = getMimeForContentTypeId(contentType.id);
-						if (mime) {
-							highlighter.setMode(mime);
-						} else {
-							console.log("Missing MIME in content type " + contentType.id);
-						}
+			var highlighterServiceImpl = {
+				setContentType: function(contentType) {
+					var mime = getMimeForContentTypeId(contentType.id);
+					if (mime) {
+						highlighter.setMode(mime);
+					} else {
+						console.log("Missing MIME in content type " + contentType.id);
 					}
 				},
+				dispatchEvent: function(type, event) {
+					// Having a 'dispatchEvent' service method turns this service into an event emitter
+				}
+			};
+			provider.registerService("orion.edit.highlighter",
+				highlighterServiceImpl,
 				{ type: "highlighter",
 				  contentType: contentTypes
 				});
 			highlighter.addEventListener("StyleReady", function(styleReadyEvent) {
-				highlightServiceProvider.dispatchEvent("orion.edit.highlighter.styleReady", styleReadyEvent);
+				highlighterServiceImpl.dispatchEvent("orion.edit.highlighter.styleReady", styleReadyEvent);
 			});
 			
 			provider.connect(function(e){
