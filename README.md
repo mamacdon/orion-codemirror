@@ -22,7 +22,7 @@ Uninstalling
 
 Requirements
 ------------
-* Orion 0.4
+* Orion 1.0
 
 License
 -------
