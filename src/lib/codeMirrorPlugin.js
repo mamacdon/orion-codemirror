@@ -1,20 +1,20 @@
 /*global define document require window*/
 var registerPlugin;
 require([
-		'orion/plugin', 'orion/textview/textModel', 'orion/editor/mirror',
+		'orion/plugin', 'orion/EventTarget', 'orion/textview/textModel', 'orion/editor/mirror',
 		'orioncodemirror/mirrorTextModel', 'orioncodemirror/highlighter'],
-	function(PluginProvider, mTextModel, mMirror, mMirrorTextModel, mHighlighter) {
+	function(PluginProvider, EventTarget, mTextModel, mMirror, mMirrorTextModel, mHighlighter) {
 		// Expose Orion's implementation of CodeMirror API as the global CodeMirror object, since it's
 		// needed by the CodeMirror modes that we are about to load.
 		window.CodeMirror = new mMirror.Mirror();
 
 		require(['codemirror2-compressed/modes-compressed'],
 			function(mModes) {
-				registerPlugin(PluginProvider, mTextModel, mMirror, mMirrorTextModel, mHighlighter, window.CodeMirror);
+				registerPlugin(PluginProvider, EventTarget, mTextModel, mMirror, mMirrorTextModel, mHighlighter, window.CodeMirror);
 			});
 });
 
-registerPlugin = function(PluginProvider, mTextModel, mMirror, mMirrorTextModel, mHighlighter, mirror) {
+registerPlugin = function(PluginProvider, EventTarget, mTextModel, mMirror, mMirrorTextModel, mHighlighter, mirror) {
 	/*global console CodeMirror window*/
 	// Invert 1:1 map
 	function invert(obj) {
@@ -153,10 +153,6 @@ registerPlugin = function(PluginProvider, mTextModel, mMirror, mMirrorTextModel,
 				});
 	
 			var highlighterServiceImpl = {
-				// Magic methods to indicate that this service is an event emitter
-				addEventListener: function() {},
-				dispatchEvent: function() {},
-				removeEventListener: function() {},
 				setContentType: function(contentType) {
 					var mime = getMimeForContentTypeId(contentType.id);
 					if (mime) {
@@ -166,6 +162,8 @@ registerPlugin = function(PluginProvider, mTextModel, mMirror, mMirrorTextModel,
 					}
 				}
 			};
+			// Turn the service impl into an event emitter
+			EventTarget.attach(highlighterServiceImpl);
 			provider.registerService("orion.edit.highlighter",
 				highlighterServiceImpl,
 				{ type: "highlighter",
