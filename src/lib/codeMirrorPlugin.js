@@ -170,7 +170,8 @@ registerPlugin = function(PluginProvider, EventTarget, mTextModel, mMirror, mMir
 				  contentType: contentTypes
 				});
 			highlighter.addEventListener("StyleReady", function(styleReadyEvent) {
-				highlighterServiceImpl.dispatchEvent("orion.edit.highlighter.styleReady", styleReadyEvent);
+				styleReadyEvent.type = "orion.edit.highlighter.styleReady";
+				highlighterServiceImpl.dispatchEvent(styleReadyEvent);
 			});
 			
 			provider.connect(function(e){
