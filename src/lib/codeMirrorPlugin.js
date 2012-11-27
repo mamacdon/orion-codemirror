@@ -101,7 +101,7 @@ registerPlugin = function(PluginProvider, EventTarget, mTextModel, mMirror, mMir
 			return {
 				id: getContentTypeIdForMime(mime) || mime,
 				extension: mime2Ext[mime],
-				"extends": "text.plain"
+				"extends": "text/plain"
 			};
 		});
 	}
