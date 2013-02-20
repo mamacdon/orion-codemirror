@@ -1,5 +1,11 @@
 #!/bin/bash
-projDir=~/workspace/dev/foo/cr
+
+if [ ! "$#" -eq 1 ]; then
+    echo >&2 "Usage: $0 [orion-codemirror repo directory]"
+    exit 1
+fi
+
+projDir=$1
 buildDir=$projDir/build
 outDir=$projDir/out
 
@@ -22,6 +28,7 @@ check_err $? "reset failed."
 # run the build
 cd $buildDir
 ./build.sh
+sleep 2
 check_err $? "Build failed."
 
 # Commit the built code
@@ -29,6 +36,7 @@ git add $outDir
 git commit -m "Update built code for gh-pages"
 
 # Copy the resulting codeMirrorPlugin.html and lib/ to the toplevel project folder, so http://mamacdon.github.com/orion-codemirror/codeMirrorPlugin.html will work
+echo Copying $outDir/codeMirrorPlugin.html to $projDir
 cp $outDir/codeMirrorPlugin.html $projDir
 cp -r $outDir/lib $projDir
 
