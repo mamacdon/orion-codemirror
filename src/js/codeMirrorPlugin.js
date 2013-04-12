@@ -28,7 +28,9 @@ require(['orion/plugin', 'orion/EventTarget', 'orion/textview/textModel',
 		var mime2ContentType = {
 			"application/xml": "application/xml", // orion
 			"text/x-java": "text/x-java-source", // orion
-			"text/javascript": "application/javascript" // orion
+			"text/javascript": "application/javascript", // orion
+			"text/x-sh": "text/sh", // orion
+			"text/x-properties": "text/conf" // orion
 		};
 		var contentType2Mime = invert(mime2ContentType);
 		var mime2Ext = {
@@ -56,7 +58,7 @@ require(['orion/plugin', 'orion/EventTarget', 'orion/textview/textModel',
 			"text/x-perl": ["pl"],
 			"text/x-php": ["php", "php3", "php4", "php5"],
 			"application/x-httpd-php": ["phtml"],
-			"text/x-properties": ["properties", "ini", "conf"],
+			"text/x-properties": ["properties", "ini"/*, "conf"*/],
 			"text/x-python": ["py"],
 			"text/x-rsrc": ["r"],
 			"text/x-rst": ["rst"],
