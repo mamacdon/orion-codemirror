@@ -12,7 +12,7 @@
 		i18n: 'requirejs/i18n'
 	},
 	shim: {
-		// Before loading the modes this we need to setup the CodeMirror global
+		// Before loading the modes we need to set the CodeMirror global
 		'cm2/modes-compressed': {
 			deps: ['orion-cm/globalCodeMirror']
 		}
