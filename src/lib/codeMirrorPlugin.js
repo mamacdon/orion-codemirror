@@ -79,7 +79,7 @@ registerPlugin = function(PluginProvider, EventTarget, mTextModel, mMirror, mMir
 		"text/velocity": [],
 //		"text/xml": ["xml"],
 		"application/xml": ["xml"],
-		"text/x-yaml": ["yaml"]
+		"text/x-yaml": ["yaml", "yml"]
 	};
 	
 	function getMimeForContentTypeId(contentTypeId) {
