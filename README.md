@@ -4,7 +4,7 @@ Installing from Github
 ----------------------
 The latest version of this plugin is hosted on Github.
 
-1. Go to [http://mamacdon.github.com/orion-codemirror/codeMirrorPlugin.html](http://mamacdon.github.com/orion-codemirror/codeMirrorPlugin.html).
+1. Go to [http://mamacdon.github.io/orion-codemirror/codeMirrorPlugin.html](http://mamacdon.github.io/orion-codemirror/codeMirrorPlugin.html).
 2. Follow the installation instructions.
 
 Installing from source

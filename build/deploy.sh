@@ -35,7 +35,7 @@ check_err $? "Build failed."
 git add $outDir
 git commit -m "Update built code for gh-pages"
 
-# Copy the resulting codeMirrorPlugin.html and lib/ to the toplevel project folder, so http://mamacdon.github.com/orion-codemirror/codeMirrorPlugin.html will work
+# Copy the resulting codeMirrorPlugin.html and lib/ to the toplevel project folder, so http://mamacdon.github.io/orion-codemirror/codeMirrorPlugin.html will work
 echo Copying $outDir/codeMirrorPlugin.html to $projDir
 cp $outDir/codeMirrorPlugin.html $projDir
 cp -r $outDir/lib $projDir
