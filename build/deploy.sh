@@ -6,8 +6,8 @@ if [ ! "$#" -eq 1 ]; then
 fi
 
 projDir=$1
-buildDir=$projDir/build
-outDir=$projDir/out
+buildDir=build
+outDir=out
 
 function check_err() {
 	if [[ "$1" -ne "0" ]]; then
@@ -17,7 +17,7 @@ function check_err() {
 }
 
 # reset gh-pages to latest in master
-cd $projDir
+pushd $projDir
 echo "Checking out gh-pages..."
 git checkout -f gh-pages
 check_err $? "checkout failed."
@@ -26,32 +26,38 @@ git reset --hard master
 check_err $? "reset failed."
 
 # run the build
-cd $buildDir
+pushd $buildDir
 ./build.sh
 sleep 2
 check_err $? "Build failed."
+popd
 
 # Commit the built code
 git add $outDir
 git commit -m "Update built code for gh-pages"
 
 # Copy the resulting codeMirrorPlugin.html and js/ to the toplevel project folder, so http://mamacdon.github.io/orion-codemirror/codeMirrorPlugin.html will work
+pushd $outDir
 echo Copying $outDir/codeMirrorPlugin.html to $projDir
-cp $outDir/codeMirrorPlugin.html $projDir
-cp -r $outDir/js $projDir
+cp codeMirrorPlugin.html ../
+cp -r ./js ../
+popd
 
 # Commit the change from previous step
-git add $projDir/codeMirrorPlugin.html
-git add $projDir/js
+git add codeMirrorPlugin.html
+git add js
 git commit -m "Copy built code to project root for gh-pages"
 
 # clean up
 git co master
-git clean -df $projDir/codeMirrorPlugin.html
-git clean -df $projDir/js
-git clean -df $projDir/out
+git clean -df codeMirrorPlugin.html
+git clean -df js
+git clean -df out
 
 echo 
 echo To update the GitHub page, run:
 echo 
-echo git push -f origin gh-pages:refs/heads/gh-pages
+echo cd "$projDir" "&&" git push -f origin gh-pages:refs/heads/gh-pages
+
+#popd
+#popd
