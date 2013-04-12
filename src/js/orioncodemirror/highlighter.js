@@ -1,6 +1,6 @@
 /*jslint browser:true*/
 /*global define */
-define("orioncodemirror/highlighter", ["orion/editor/mirror", "orion/textview/eventTarget"], function(mMirror, mEventTarget) {
+define(['orion/editor/mirror', 'orion/textview/eventTarget'], function(mMirror, mEventTarget) {
 	
 	/**
 	 * This listens to highlight results obtained from the ModeApplier, does a small bit of mediation on the result,
@@ -89,4 +89,4 @@ define("orioncodemirror/highlighter", ["orion/editor/mirror", "orion/textview/ev
 	return {
 		Highlighter: Highlighter
 	};
-}, "orion/codemirror");
+});

@@ -1,7 +1,8 @@
 /*global console define require window*/
 var registerPlugin;
-require(['orion/plugin', 'orion/EventTarget', 'orion/textview/textModel', 'orioncodemirror/mirrorTextModel', 'orioncodemirror/highlighter',
-	'codemirror2-compressed/modes-compressed', 'orioncodemirror/globalCodeMirror', 'requirejs/domReady!'],
+require(['orion/plugin', 'orion/EventTarget', 'orion/textview/textModel',
+		'orion-cm/mirrorTextModel', 'orion-cm/highlighter', 'orion-cm/globalCodeMirror',
+		'cm2/modes-compressed', 'requirejs/domReady!'],
 	function(PluginProvider, EventTarget, mTextModel, mMirrorTextModel, mHighlighter, mModes, globalCodeMirror, document) {
 		// Invert 1:1 map
 		function invert(obj) {

@@ -1,5 +1,5 @@
 /*global define*/
-define("orioncodemirror/mirrorTextModel", ["orion/textview/textModel"], function(mTextModel) {
+define(['orion/textview/textModel'], function(mTextModel) {
 	function _dbgEvent(e) {
 //		var r = [];
 //		for (var p in e) {
@@ -29,4 +29,4 @@ define("orioncodemirror/mirrorTextModel", ["orion/textview/textModel"], function
 	};
 	
 	return {MirrorTextModel: MirrorTextModel};
-}, "orion/editor");
+});
