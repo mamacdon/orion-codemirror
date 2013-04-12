@@ -1,7 +1,8 @@
 /*global console define require window*/
 var registerPlugin;
-require(['orion/plugin', 'orion/EventTarget', 'orion/textview/textModel', 'orion/editor/mirror', 'orioncodemirror/mirrorTextModel', 'orioncodemirror/highlighter', 'requirejs/domReady!'],
-	function(PluginProvider, EventTarget, mTextModel, mMirror, mMirrorTextModel, mHighlighter, document) {
+require(['orion/plugin', 'orion/EventTarget', 'orion/textview/textModel', 'orioncodemirror/mirrorTextModel', 'orioncodemirror/highlighter',
+	'codemirror2-compressed/modes-compressed', 'orioncodemirror/globalCodeMirror', 'requirejs/domReady!'],
+	function(PluginProvider, EventTarget, mTextModel, mMirrorTextModel, mHighlighter, mModes, globalCodeMirror, document) {
 		// Invert 1:1 map
 		function invert(obj) {
 			var result = {};
@@ -75,115 +76,110 @@ require(['orion/plugin', 'orion/EventTarget', 'orion/textview/textModel', 'orion
 			return mime2ContentType[mime];
 		}
 
-		// Important: the modes we are about to load need the 'window.CodeMirror' object.
-		// TODO replace this with a RequireJS 2 "shim" config
-		var globalCodeMirror = window.CodeMirror = new mMirror.Mirror();
-		require(['codemirror2-compressed/modes-compressed'], function(mModes) {
-			function getMimes(modes) {
-				return globalCodeMirror.listMIMEs().filter(
-					function(mime) {
-						var mname = globalCodeMirror._getModeName(mime);
-						return modes.indexOf(mname) !== -1;
-					});
-			}
-			// Create Orion content types for modes
-			function getContentTypes(modes) {
-				return getMimes(modes).map(function(mime) {
-					return {
-						id: getContentTypeIdForMime(mime) || mime,
-						extension: mime2Ext[mime],
-						"extends": "text/plain"
-					};
+		function getMimes(modes) {
+			return globalCodeMirror.listMIMEs().filter(
+				function(mime) {
+					var mname = globalCodeMirror._getModeName(mime);
+					return modes.indexOf(mname) !== -1;
 				});
+		}
+		// Create Orion content types for modes
+		function getContentTypes(modes) {
+			return getMimes(modes).map(function(mime) {
+				return {
+					id: getContentTypeIdForMime(mime) || mime,
+					extension: mime2Ext[mime],
+					"extends": "text/plain"
+				};
+			});
+		}
+		function createForm() {
+			var list = document.getElementById("modelist");
+			modes.forEach(function(mode) {
+				var li = document.createElement("li");
+				var label = document.createElement("div");
+				var modeNode = document.createElement("a");
+				modeNode.href = "http://codemirror.net/mode/" + mode + "/";
+				modeNode.innerHTML = mode;
+				label.appendChild(modeNode);
+				li.appendChild(label);
+				list.appendChild(li);
+			});
+		}
+		
+		function errback(e) {
+			if (typeof console === "object" && console) {
+				console.log("orion-codemirror: Couldn't install plugin: " + e);
 			}
-			function createForm() {
-				var list = document.getElementById("modelist");
-				modes.forEach(function(mode) {
-					var li = document.createElement("li");
-					var label = document.createElement("div");
-					var modeNode = document.createElement("a");
-					modeNode.href = "http://codemirror.net/mode/" + mode + "/";
-					modeNode.innerHTML = mode;
-					label.appendChild(modeNode);
-					li.appendChild(label);
-					list.appendChild(li);
+		}
+		
+		// Register plugin
+		(function() {
+			var modeSet = modes; // modeSet to install
+			try {
+				var model = new mMirrorTextModel.MirrorTextModel();
+				var highlighter = new mHighlighter.Highlighter(model, globalCodeMirror);
+				var contentTypes = getContentTypes(modeSet);
+
+				var provider = new PluginProvider({
+					name: "Orion CodeMirror syntax highlighting",
+					version: "2.0",
+					description: "Provides syntax highlighting for various languages. Powered by code from the CodeMirror project.",
+					license: "Eclipse Distribution License",
+					website: "https://github.com/mamacdon/orion-codemirror"
 				});
-			}
-			
-			function errback(e) {
-				if (typeof console === "object" && console) {
-					console.log("orion-codemirror: Couldn't install plugin: " + e);
-				}
-			}
-			
-			// Register plugin
-			(function() {
-				var modeSet = modes; // modeSet to install
-				try {
-					var model = new mMirrorTextModel.MirrorTextModel();
-					var highlighter = new mHighlighter.Highlighter(model, globalCodeMirror);
-					var contentTypes = getContentTypes(modeSet);
-					
-					var provider = new PluginProvider({
-						name: "Orion CodeMirror syntax highlighting",
-						version: "2.0",
-						description: "Provides syntax highlighting for various languages. Powered by code from the CodeMirror project.",
-						license: "Eclipse Distribution License",
-						website: "https://github.com/mamacdon/orion-codemirror"
-					});
-					provider.registerService("orion.edit.model", 
-						{	
-							onModelChanging: function(modelChangingEvent) {
-								model.onTargetModelChanging(modelChangingEvent);
-							},
-							onScroll: function(scrollEvent) {
-								highlighter.setViewportIndex(scrollEvent.topIndex);
-							}
+				provider.registerService("orion.edit.model", 
+					{	
+						onModelChanging: function(modelChangingEvent) {
+							model.onTargetModelChanging(modelChangingEvent);
 						},
-						{ types: ["ModelChanging", "Scroll"],
-						  contentType: contentTypes
-						});
-					
-					// Register editor associations for installed modes
-					provider.registerService("orion.file.contenttype", {},
-						{	contentTypes: contentTypes
-						});
-					provider.registerService("orion.navigate.openWith", {},
-						{	editor: "orion.editor",
-							contentType: contentTypes.map(function(ct) { return ct.id; })
-						});
-			
-					var highlighterServiceImpl = {
-						setContentType: function(contentType) {
-							var mime = getMimeForContentTypeId(contentType.id);
-							if (mime) {
-								highlighter.setMode(mime);
-							} else {
-								console.log("Missing MIME in content type " + contentType.id);
-							}
+						onScroll: function(scrollEvent) {
+							highlighter.setViewportIndex(scrollEvent.topIndex);
 						}
-					};
-					// Turn the service impl into an event emitter
-					EventTarget.attach(highlighterServiceImpl);
-					provider.registerService("orion.edit.highlighter",
-						highlighterServiceImpl,
-						{ type: "highlighter",
-						  contentType: contentTypes
-						});
-					highlighter.addEventListener("StyleReady", function(styleReadyEvent) {
-						styleReadyEvent.type = "orion.edit.highlighter.styleReady";
-						highlighterServiceImpl.dispatchEvent(styleReadyEvent);
+					},
+					{ types: ["ModelChanging", "Scroll"],
+					  contentType: contentTypes
 					});
-					
-					provider.connect(function(e){
-		//				console.log("orion-codemirror: connected. Supported modes: [" + modeSet.join(",") + "]");
-					}, errback);
-				} catch (e) {
-					errback(e);
-				}
 				
-				createForm();
-				document.getElementById("url").value =  window.location.href;
-			}());
-		});
+				// Register editor associations for installed modes
+				provider.registerService("orion.file.contenttype", {},
+					{	contentTypes: contentTypes
+					});
+				provider.registerService("orion.navigate.openWith", {},
+					{	editor: "orion.editor",
+						contentType: contentTypes.map(function(ct) { return ct.id; })
+					});
+		
+				var highlighterServiceImpl = {
+					setContentType: function(contentType) {
+						var mime = getMimeForContentTypeId(contentType.id);
+						if (mime) {
+							highlighter.setMode(mime);
+						} else {
+							console.log("Missing MIME in content type " + contentType.id);
+						}
+					}
+				};
+				// Turn the service impl into an event emitter
+				EventTarget.attach(highlighterServiceImpl);
+				provider.registerService("orion.edit.highlighter",
+					highlighterServiceImpl,
+					{ type: "highlighter",
+					  contentType: contentTypes
+					});
+				highlighter.addEventListener("StyleReady", function(styleReadyEvent) {
+					styleReadyEvent.type = "orion.edit.highlighter.styleReady";
+					highlighterServiceImpl.dispatchEvent(styleReadyEvent);
+				});
+				
+				provider.connect(function(e){
+	//				console.log("orion-codemirror: connected. Supported modes: [" + modeSet.join(",") + "]");
+				}, errback);
+			} catch (e) {
+				errback(e);
+			}
+			
+			createForm();
+			document.getElementById("url").value =  window.location.href;
+		}());
 });

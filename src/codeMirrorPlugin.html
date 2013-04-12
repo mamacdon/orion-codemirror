@@ -24,11 +24,17 @@
 	</style>
 	<script src="js/requirejs/require.js"></script>
 	<script>
-		/*global require*/
-		require.config({
+		/*global requirejs require*/
+		requirejs.config({
 			baseUrl: 'js/',
 			paths: {
 				i18n: 'requirejs/i18n'
+			},
+			shim: {
+				// Before loading the modes this we need to setup the CodeMirror global
+				'codemirror2-compressed/modes-compressed': {
+					deps: ['orioncodemirror/globalCodeMirror']
+				}
 			}
 		});
 		require(['codeMirrorPlugin']);
