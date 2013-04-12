@@ -1,7 +1,7 @@
-/*global console define document require window*/
+/*global console define require window*/
 var registerPlugin;
-require(['orion/plugin', 'orion/EventTarget', 'orion/textview/textModel', 'orion/editor/mirror', 'orioncodemirror/mirrorTextModel', 'orioncodemirror/highlighter'],
-	function(PluginProvider, EventTarget, mTextModel, mMirror, mMirrorTextModel, mHighlighter) {
+require(['orion/plugin', 'orion/EventTarget', 'orion/textview/textModel', 'orion/editor/mirror', 'orioncodemirror/mirrorTextModel', 'orioncodemirror/highlighter', 'requirejs/domReady!'],
+	function(PluginProvider, EventTarget, mTextModel, mMirror, mMirrorTextModel, mHighlighter, document) {
 		// Invert 1:1 map
 		function invert(obj) {
 			var result = {};
