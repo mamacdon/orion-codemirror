@@ -1,0 +1,23 @@
+{
+  "name": "orion-codemirror",
+  "version": "2.0.0",
+  "description": "Plugin for Eclipse Orion that provides syntax highlighting for various programming languages.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mamacdon/orion-codemirror.git"
+  },
+  "keywords": [
+    "orion",
+    "eclipse",
+    "codemirror"
+  ],
+  "author": "Mark Macdonald",
+  "license": "Eclipse Distribution License",
+  "readmeFilename": "README.md",
+  "devDependencies": {
+    "requirejs": "~2.1.5"
+  }
+}

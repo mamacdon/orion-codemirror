@@ -1,7 +1,8 @@
 #!/bin/bash
 
 if [ ! "$#" -eq 1 ]; then
-    echo >&2 "Usage: $0 [orion-codemirror repo directory]"
+#    echo >&2 "Usage: $0 [orion-codemirror repo directory]"
+    echo >&2 "Usage: cat $0 | bash -s [orion-codemirror repo directory]"
     exit 1
 fi
 
