@@ -129,6 +129,16 @@ define("orion/editor/mirror", ["i18n!orion/editor/nls/messages", "orion/textview
 		// Expose Stream as a property named "StringStream". This is required to support CodeMirror's Perl mode,
 		// which monkey-patches CodeMirror.StringStream.prototype and will fail if that object doesn't exist.
 		this.StringStream = Stream;
+
+		// Built in text/plain mode that generates no tokens.
+		this.defineMode("null", function() {
+			return {
+				token: function(stream) {
+					stream.skipToEnd();
+				}
+			};
+		});
+		this.defineMIME("text/plain", "null");
 	}
 	function keys(obj) {
 		var k = [];
