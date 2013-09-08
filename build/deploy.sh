@@ -56,9 +56,9 @@ git clean -df js
 git clean -df out
 
 echo 
-echo To update the GitHub page, run:
+echo To update the Google Code mirror, run:
 echo 
-echo cd "$projDir" "&&" git push -f origin gh-pages:refs/heads/gh-pages
+echo cd "$projDir" "&&" git push -f googlecode gh-pages:refs/heads/master
 
 #popd
 #popd
