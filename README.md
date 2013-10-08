@@ -18,7 +18,7 @@ Optionally, you can minify the code to reduce download time: try the ```build/bu
 
 Uninstalling
 ------------
-1. Log in to Orion and click the **Settings** link on the global toolbar.
+1. Log in to Orion and go to the **Settings** page.
 2. Click the **Plugins** category.
 3. Find the "Orion Codemirror syntax highlighting" entry from the plugin list, then click the Delete button beside it.
 
