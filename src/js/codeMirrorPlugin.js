@@ -132,8 +132,8 @@ require(['orion/plugin', 'orion/EventTarget', 'orion/textview/textModel',
 				var contentTypes = getContentTypes(modeSet);
 
 				var provider = new PluginProvider({
-					name: "Orion CodeMirror syntax highlighting",
-					version: "2.0",
+					name: "Orion CodeMirror syntax highlighting (legacy)",
+					version: "3.0",
 					description: "Provides syntax highlighting for various languages. Powered by code from the CodeMirror project.",
 					license: "Eclipse Distribution License",
 					website: "https://github.com/mamacdon/orion-codemirror"
