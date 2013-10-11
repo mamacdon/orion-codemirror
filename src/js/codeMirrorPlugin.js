@@ -1,9 +1,15 @@
 /*global console define require window*/
 var registerPlugin;
-require(['orion/plugin', 'orion/EventTarget', 'orion/textview/textModel',
-		'orion-cm/mirrorTextModel', 'orion-cm/highlighter', 'orion-cm/globalCodeMirror',
-		'cm/codemirror-compressed', 'requirejs/domReady!'],
-	function(PluginProvider, EventTarget, mTextModel, mMirrorTextModel, mHighlighter, globalCodeMirror, _, document) {
+require([
+	'orion/plugin',
+	'orion/EventTarget',
+	'orion/editor/textModel',
+	'orion-cm/mirrorTextModel',
+	'orion-cm/highlighter',
+	'orion-cm/globalCodeMirror',
+	'cm/codemirror-compressed',
+	'requirejs/domReady!'
+], function(PluginProvider, EventTarget, mTextModel, mMirrorTextModel, mHighlighter, globalCodeMirror, _, document) {
 		// Invert 1:1 map
 		function invert(obj) {
 			var result = {};

@@ -1,6 +1,6 @@
 /*jslint browser:true*/
 /*global define */
-define(['orion/editor/mirror', 'orion/textview/eventTarget'], function(mMirror, mEventTarget) {
+define(['orion/editor/mirror', 'orion/editor/eventTarget'], function(mMirror, mEventTarget) {
 	
 	/**
 	 * This listens to highlight results obtained from the ModeApplier, does a small bit of mediation on the result,
