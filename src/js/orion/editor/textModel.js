@@ -1,6 +1,6 @@
 /*******************************************************************************
  * @license
- * Copyright (c) 2010, 2011 IBM Corporation and others.
+ * Copyright (c) 2010, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials are made 
  * available under the terms of the Eclipse Public License v1.0 
  * (http://www.eclipse.org/legal/epl-v10.html), and the Eclipse Distribution 
@@ -11,10 +11,9 @@
  *		Silenio Quarti (IBM Corporation) - initial API and implementation
  ******************************************************************************/
  
-/*global define window*/
+/*global define*/
 
-define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEventTarget) {
-	var isWindows = window.navigator.platform.indexOf("Win") !== -1;
+define("orion/editor/textModel", ['orion/editor/eventTarget', 'orion/util'], function(mEventTarget, util) { //$NON-NLS-2$  //$NON-NLS-1$ //$NON-NLS-0$
 
 	/**
 	 * Constructs a new TextModel with the given text and default line delimiter.
@@ -22,19 +21,19 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 	 * @param {String} [text=""] the text that the model will store
 	 * @param {String} [lineDelimiter=platform delimiter] the line delimiter used when inserting new lines to the model.
 	 *
-	 * @name orion.textview.TextModel
+	 * @name orion.editor.TextModel
 	 * @class The TextModel is an interface that provides text for the view. Applications may
 	 * implement the TextModel interface to provide a custom store for the view content. The
 	 * view interacts with its text model in order to access and update the text that is being
 	 * displayed and edited in the view. This is the default implementation.
 	 * <p>
 	 * <b>See:</b><br/>
-	 * {@link orion.textview.TextView}<br/>
-	 * {@link orion.textview.TextView#setModel}
+	 * {@link orion.editor.TextView}<br/>
+	 * {@link orion.editor.TextView#setModel}
 	 * </p>
-	 * @borrows orion.textview.EventTarget#addEventListener as #addEventListener
-	 * @borrows orion.textview.EventTarget#removeEventListener as #removeEventListener
-	 * @borrows orion.textview.EventTarget#dispatchEvent as #dispatchEvent
+	 * @borrows orion.editor.EventTarget#addEventListener as #addEventListener
+	 * @borrows orion.editor.EventTarget#removeEventListener as #removeEventListener
+	 * @borrows orion.editor.EventTarget#dispatchEvent as #dispatchEvent
 	 */
 	function TextModel(text, lineDelimiter) {
 		this._lastLineIndex = -1;
@@ -44,10 +43,10 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 		this.setLineDelimiter(lineDelimiter);
 	}
 
-	TextModel.prototype = /** @lends orion.textview.TextModel.prototype */ {
+	TextModel.prototype = /** @lends orion.editor.TextModel.prototype */ {
 		/**
 		 * @class This object describes the options to use while finding occurrences of a string in a text model.
-		 * @name orion.textview.FindOptions
+		 * @name orion.editor.FindOptions
 		 *
 		 * @property {String} string the search string to be found.
 		 * @property {Boolean} [regex=false] whether or not the search string is a regular expression.
@@ -62,9 +61,9 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 		 * @class This object represents a find occurrences iterator.
 		 * <p>
 		 * <b>See:</b><br/>
-		 * {@link orion.textview.TextModel#find}<br/>
+		 * {@link orion.editor.TextModel#find}<br/>
 		 * </p>		 
-		 * @name orion.textview.FindIterator
+		 * @name orion.editor.FindIterator
 		 * 
 		 * @property {Function} hasNext Determines whether there are more occurrences in the iterator.
 		 * @property {Function} next Returns the next matched range {start,end} in the iterator.
@@ -72,8 +71,8 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 		/**
 		 * Finds occurrences of a string in the text model.
 		 *
-		 * @param {orion.textview.FindOptions} options the search options
-		 * @return {orion.textview.FindIterator} the find occurrences iterator.
+		 * @param {orion.editor.FindOptions} options the search options
+		 * @return {orion.editor.FindIterator} the find occurrences iterator.
 		 */
 		find: function(options) {
 			if (this._text.length > 1) {
@@ -82,30 +81,41 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 			var string = options.string;
 			var regex = options.regex;
 			var pattern = string;
+			var caseInsensitive = options.caseInsensitive;
 			if (!regex && string) {
-				pattern = string.replace(/([\\$\^*\/+?\.\(\)|{}\[\]])/g, "\\$&");
+				pattern = string.replace(/([\\$\^*\/+?\.\(\)|{}\[\]])/g, "\\$&"); //$NON-NLS-0$
+				/*
+				* Bug in JS RegEx. In a Turkish locale, dotless i (u0131) capitalizes to I (u0049) and i (u0069) 
+				* capitalizes to dot I (u0130). The JS RegEx does not match correctly the Turkish i's in case
+				* insensitive mode. The fix is to detect the presence of Turkish i's in the search pattern and 
+				* to modify the pattern to search for both upper and lower case.
+				*/
+				if (caseInsensitive) {  //$NON-NLS-1$ //$NON-NLS-0$
+					pattern = pattern.replace(/[iI\u0130\u0131]/g, "[Ii\u0130\u0131]"); //$NON-NLS-0$
+				}
 			}
 			var current = null, skip;
 			if (pattern) {
 				var reverse = options.reverse;
 				var wrap = options.wrap;
 				var wholeWord = options.wholeWord;
-				var caseInsensitive = options.caseInsensitive;
 				var start = options.start || 0;
 				var end = options.end;
-				var isRange = options.end !== undefined;
+				var isRange = (end !== null && end !== undefined);
 				var flags = "";
-				if (flags.indexOf("g") === -1) { flags += "g"; }
+				if (flags.indexOf("g") === -1) { flags += "g"; } //$NON-NLS-1$ //$NON-NLS-0$
 				if (caseInsensitive) {
-					if (flags.indexOf("i") === -1) { flags += "i"; }
+					if (flags.indexOf("i") === -1) { flags += "i"; } //$NON-NLS-1$ //$NON-NLS-0$
 				}
 				if (wholeWord) {
-					pattern = "\\b" + pattern + "\\b";
+					pattern = "\\b" + pattern + "\\b"; //$NON-NLS-1$ //$NON-NLS-0$
 				}
 				var text = this._text[0], result, lastIndex, offset = 0;
 				if (isRange) {
-					text = text.substring(start, end);
-					offset = start;
+					var s = start < end ? start : end;
+					var e = start < end ? end : start;
+					text = text.substring(s, e);
+					offset = s;
 				}
 				var re = new RegExp(pattern, flags);
 				if (reverse) {
@@ -119,13 +129,13 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 								return null;
 							}
 							if (result) {
-								if (result.index < start) {
+								if (result.index + offset < start) {
 									match = {start: result.index + offset, end: re.lastIndex + offset};
 								} else {
 									if (!wrap || match) {
 										break;
 									}
-									start = text.length;
+									start = text.length + offset;
 									match = {start: result.index + offset, end: re.lastIndex + offset};
 								}
 							} else {
@@ -195,7 +205,7 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 		 * @param {Boolean} [includeDelimiter=false] whether or not to include the line delimiter. 
 		 * @returns {String} the line text or <code>null</code> if out of range.
 		 *
-		 * @see #getLineAtOffset
+		 * @see orion.editor.TextModel#getLineAtOffset
 		 */
 		getLine: function(lineIndex, includeDelimiter) {
 			var lineCount = this.getLineCount();
@@ -301,7 +311,7 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 		 * @param {Boolean} [includeDelimiter=false] whether or not to include the line delimiter. 
 		 * @return {Number} the line end offset or <code>-1</code> if out of range.
 		 *
-		 * @see #getLineStart
+		 * @see orion.editor.TextModel#getLineStart
 		 */
 		getLineEnd: function(lineIndex, includeDelimiter) {
 			var lineCount = this.getLineCount();
@@ -333,7 +343,7 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 		 * @param {Number} lineIndex the zero based index of the line.
 		 * @return {Number} the line start offset or <code>-1</code> if out of range.
 		 *
-		 * @see #getLineEnd
+		 * @see orion.editor.TextModel#getLineEnd
 		 */
 		getLineStart: function(lineIndex) {
 			if (!(0 <= lineIndex && lineIndex < this.getLineCount())) {
@@ -351,7 +361,7 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 		 * @param {Number} [start=0] the zero based start offset of text range.
 		 * @param {Number} [end=char count] the zero based end offset of text range.
 		 *
-		 * @see #setText
+		 * @see orion.editor.TextModel#setText
 		 */
 		getText: function(start, end) {
 			if (start === undefined) { start = 0; }
@@ -385,7 +395,7 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 		 * Notifies all listeners that the text is about to change.
 		 * <p>
 		 * This notification is intended to be used only by the view. Application clients should
-		 * use {@link orion.textview.TextView#event:onModelChanging}.
+		 * use {@link orion.editor.TextView#event:onModelChanging}.
 		 * </p>
 		 * <p>
 		 * NOTE: This method is not meant to called directly by application code. It is called internally by the TextModel
@@ -393,7 +403,7 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 		 * purposes and to allow integration with other toolkit frameworks.
 		 * </p>
 		 *
-		 * @param {orion.textview.ModelChangingEvent} modelChangingEvent the changing event
+		 * @param {orion.editor.ModelChangingEvent} modelChangingEvent the changing event
 		 */
 		onChanging: function(modelChangingEvent) {
 			return this.dispatchEvent(modelChangingEvent);
@@ -402,7 +412,7 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 		 * Notifies all listeners that the text has changed.
 		 * <p>
 		 * This notification is intended to be used only by the view. Application clients should
-		 * use {@link orion.textview.TextView#event:onModelChanged}.
+		 * use {@link orion.editor.TextView#event:onModelChanged}.
 		 * </p>
 		 * <p>
 		 * NOTE: This method is not meant to called directly by application code. It is called internally by the TextModel
@@ -410,7 +420,7 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 		 * purposes and to allow integration with other toolkit frameworks.
 		 * </p>
 		 *
-		 * @param {orion.textview.ModelChangedEvent} modelChangedEvent the changed event
+		 * @param {orion.editor.ModelChangedEvent} modelChangedEvent the changed event
 		 */
 		onChanged: function(modelChangedEvent) {
 			return this.dispatchEvent(modelChangedEvent);
@@ -418,24 +428,37 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 		/**
 		 * Sets the line delimiter that is used by the view
 		 * when new lines are inserted in the model due to key
-		 * strokes  and paste operations.
+		 * strokes and paste operations. The line delimiter of
+		 * existing lines are unchanged unless the to <code>all</code>
+		 * argument is <code>true</code>.
 		 * <p>
 		 * If lineDelimiter is "auto", the delimiter is computed to be
-		 * the first delimiter found the in the current text. If lineDelimiter
+		 * the first delimiter found in the current text. If lineDelimiter
 		 * is undefined or if there are no delimiters in the current text, the
 		 * platform delimiter is used.
 		 * </p>
 		 *
 		 * @param {String} lineDelimiter the line delimiter that is used by the view when inserting new lines.
+		 * @param {Boolean} [all=false] whether or not the delimiter of existing lines are changed.
 		 */
-		setLineDelimiter: function(lineDelimiter) {
-			if (lineDelimiter === "auto") {
+		setLineDelimiter: function(lineDelimiter, all) {
+			if (lineDelimiter === "auto") { //$NON-NLS-0$
 				lineDelimiter = undefined;
 				if (this.getLineCount() > 1) {
 					lineDelimiter = this.getText(this.getLineEnd(0), this.getLineEnd(0, true));
 				}
 			}
-			this._lineDelimiter = lineDelimiter ? lineDelimiter : (isWindows ? "\r\n" : "\n"); 
+			this._lineDelimiter = lineDelimiter ? lineDelimiter : util.platformDelimiter;
+			if (all) {
+				var lineCount = this.getLineCount();
+				if (lineCount > 1) {
+					var lines = new Array(lineCount);
+					for (var i=0; i<lineCount; i++) {
+						lines[i] = this.getLine(i);
+					}
+					this.setText(lines.join(this._lineDelimiter));
+				}
+			}
 		},
 		/**
 		 * Replaces the text in the given range with the given text.
@@ -453,7 +476,7 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 		 * @param {Number} [start=0] the zero based start offset of text range.
 		 * @param {Number} [end=char count] the zero based end offset of text range.
 		 *
-		 * @see #getText
+		 * @see orion.editor.TextModel#getText
 		 */
 		setText: function(text, start, end) {
 			if (text === undefined) { text = ""; }
@@ -472,8 +495,8 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 			var cr = 0, lf = 0, index = 0;
 			var newLineOffsets = [];
 			while (true) {
-				if (cr !== -1 && cr <= index) { cr = text.indexOf("\r", index); }
-				if (lf !== -1 && lf <= index) { lf = text.indexOf("\n", index); }
+				if (cr !== -1 && cr <= index) { cr = text.indexOf("\r", index); } //$NON-NLS-0$
+				if (lf !== -1 && lf <= index) { lf = text.indexOf("\n", index); } //$NON-NLS-0$
 				if (lf === -1 && cr === -1) { break; }
 				if (cr !== -1 && lf !== -1) {
 					if (cr + 1 === lf) {
@@ -491,7 +514,7 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 			}
 		
 			var modelChangingEvent = {
-				type: "Changing",
+				type: "Changing", //$NON-NLS-0$
 				text: text,
 				start: eventStart,
 				removedCharCount: removedCharCount,
@@ -523,8 +546,26 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 			for (var j = startLine + removedLineCount + 1; j < lineCount; j++) {
 				this._lineOffsets[j] += changeCount;
 			}
-			var args = [startLine + 1, removedLineCount].concat(newLineOffsets);
-			Array.prototype.splice.apply(this._lineOffsets, args);
+			
+			/*
+			* Feature in Chrome.  Chrome exceeds the maximum call stack when calling splice
+			* around 62k arguments. The limit seems to be higher on IE (250K) and Firefox (450k).
+			* The fix is to break the splice in junks of 50k.
+			*/
+			var SPLICE_LIMIT = 50000;
+			var limit = SPLICE_LIMIT, args;
+			if (newLineOffsets.length < limit) {
+				args = [startLine + 1, removedLineCount].concat(newLineOffsets);
+				Array.prototype.splice.apply(this._lineOffsets, args);
+			} else {
+				index = startLine + 1;
+				this._lineOffsets.splice(index, removedLineCount);
+				for (var k = 0; k < newLineOffsets.length; k += limit) {
+					args = [index, 0].concat(newLineOffsets.slice(k, Math.min(newLineOffsets.length, k + limit)));
+					Array.prototype.splice.apply(this._lineOffsets, args);
+					index += limit;
+				}
+			}
 			
 			var offset = 0, chunk = 0, length;
 			while (chunk<this._text.length) {
@@ -555,7 +596,7 @@ define("orion/textview/textModel", ['orion/textview/eventTarget'], function(mEve
 			if (this._text.length === 0) { this._text = [""]; }
 			
 			var modelChangedEvent = {
-				type: "Changed",
+				type: "Changed", //$NON-NLS-0$
 				start: eventStart,
 				removedCharCount: removedCharCount,
 				addedCharCount: addedCharCount,
