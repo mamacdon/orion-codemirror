@@ -4,7 +4,7 @@ Installing from the web
 -----------------------
 The most recent, minified version of this plugin is hosted on the web. It usually requires the latest stable version of Orion.
 
-1. Go [here](https://orion-codemirror.googlecode.com/git-history/gh-pages/codeMirrorPlugin.html).
+1. Go [here](https://orion-codemirror.googlecode.com/git/codeMirrorPlugin.html).
 2. Follow the installation instructions.
 
 Installing from source
