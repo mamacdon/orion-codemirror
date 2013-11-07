@@ -195,20 +195,15 @@ define("orion/editor/mirror", ["i18n!orion/editor/nls/messages", "orion/editor/e
 			this.mimeModes[mime] = modeSpec;
 		},
 		/**
+		 * @param {Object} options
 		 * @param {String|Object} modeSpec 
 		 * @see <a href="http://codemirror.net/manual.html#option_mode">http://codemirror.net/manual.html#option_mode</a>
-		 * @returns {Object}
+		 * @returns {Object} The instantiated mode.
 		 */
 		getMode: function(options, modeSpec) {
-			var config = {}, modeFactory;
-			if (typeof modeSpec === "string" && this.mimeModes[modeSpec]) {
-				modeSpec = this.mimeModes[modeSpec];
-			}
-			if (typeof modeSpec === "object") {
-				config = modeSpec;
-				modeFactory = this._modes[modeSpec.name];
-			}
-			modeFactory = modeFactory || this._modes[modeSpec];
+			modeSpec = this.resolveMode(modeSpec);
+			var config = modeSpec;
+			var modeFactory = this._modes[modeSpec.name];
 			if (typeof modeFactory !== "function") {
 				if (typeof console !== "undefined" && console) {
 					console.log("Mode not found: " + modeSpec);
@@ -217,6 +212,20 @@ define("orion/editor/mirror", ["i18n!orion/editor/nls/messages", "orion/editor/e
 				return this.getMode(options, "null");
 			}
 			return modeFactory(options, config);
+		},
+		/**
+		 * @param {String} mime A MIME type associated with the mode.
+		 * @returns {Object} The mode spec object, which has a <code>name</code> field giving the mode name, and possibly
+		 * other fields giving configuration options.
+		 */
+		resolveMode: function(modeSpec) {
+			if (typeof modeSpec === "string" && this.mimeModes[modeSpec]) {
+				modeSpec = this.mimeModes[modeSpec];
+			}
+			if (typeof modeSpec === "object" && modeSpec.name) {
+				return modeSpec;
+			}
+			return {name: modeSpec};
 		},
 		/**
 		 * @see <a href="http://codemirror.net/doc/manual.html#option_mode">http://codemirror.net/doc/manual.html#option_mode</a>
