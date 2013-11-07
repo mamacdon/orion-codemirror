@@ -29,7 +29,7 @@ require([
 			return result;
 		}
 
-		var modes = "clike clojure coffeescript css diff ecl erlang gfm go groovy haskell haxe htmlembedded htmlmixed javascript jinja2 less lua markdown mysql ntriples ocaml pascal perl php pig plsql properties python r rpm rst ruby rust scheme shell smalltalk smarty sparql stex tiddlywiki tiki vb vbscript velocity verilog xml xquery yaml".split(" ");
+		var modes = "clike clojure cobol coffeescript css diff ecl erlang gfm go groovy haskell haxe htmlembedded htmlmixed javascript jinja2 less lua markdown mysql ntriples ocaml pascal perl php pig plsql properties python r rpm rst ruby rust scheme shell smalltalk smarty sparql stex tiddlywiki tiki vb vbscript velocity verilog xml xquery yaml".split(" ");
 		// Orion's content type IDs are MIME-like but don't match CodeMirror's exactly, so we map them.
 		var mime2ContentType = {
 			"application/xml": "application/xml", // orion
@@ -43,6 +43,7 @@ require([
 			"text/x-csrc": ["c", "C", "h"],
 			"text/x-c++src": ["cc", "cpp", "c++"],
 			"text/x-clojure": ["clj"],
+			"text/x-cobol": ["cobol"],
 			"text/x-coffeescript": ["coffee"],
 			"text/x-csharp": ["cs"],
 			"text/css": ["css"],
