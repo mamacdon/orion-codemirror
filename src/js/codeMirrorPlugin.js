@@ -87,20 +87,7 @@ require([
 			"application/xml": ["xml"],
 			"text/x-yaml": ["yaml", "yml"]
 		};
-		/**
-		 * Filters out Content Types that are handled natively by Orion. We do not want to override their highlighting.
-		 */
-		function isNonNativeContentType(ct) {
-			switch (ct.id) {
-				case "application/javascript":
-				case "application/json":
-				case "text/css":
-				case "text/html":
-				case "text/x-java":
-					return false;
-			}
-			return true;
-		}
+		
 		function getMimeForContentTypeId(contentTypeId) {
 			return contentType2Mime[contentTypeId] || contentTypeId;
 		}
@@ -123,7 +110,7 @@ require([
 					extension: mime2Ext[mime],
 					"extends": "text/plain"
 				};
-			}).filter(isNonNativeContentType);
+			});
 		}
 		function createForm() {
 			var list = document.getElementById("modelist");
