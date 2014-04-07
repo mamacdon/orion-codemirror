@@ -42,7 +42,7 @@ require([
 		};
 		var contentType2Mime = invert(mime2ContentType);
 		var mime2Ext = {
-			"text/x-csrc": ["c", "C", "h"],
+			"text/x-csrc": ["c", "C", "h", "ino"],
 			"text/x-c++src": ["cc", "cpp", "c++"],
 			"text/x-clojure": ["clj"],
 			"text/x-cobol": ["cobol"],
