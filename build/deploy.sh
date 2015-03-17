@@ -10,12 +10,12 @@ projDir=$1
 buildDir=build
 outDir=out
 
-# Take master, build, commit built code to www.
-# Then (prompt to) deploy to master ref on googlecode remote.
+# Take master, build, commit built code to gh-pages.
+# Then (prompt to) deploy to gh-pages ref on origin remote.
 sourceRef=master
-builtRef=www
-deployRemote=googlecode
-deployRemoteRef=master
+builtRef=gh-pages
+deployRemote=origin
+deployRemoteRef=gh-pages
 
 function check_err() {
 	if [[ "$1" -ne "0" ]]; then
@@ -63,7 +63,7 @@ git clean -df js
 git clean -df out
 
 echo 
-echo To update the Google Code mirror, run:
+echo To update the GitHub Pages site, run:
 echo 
 echo cd "$projDir" "&&" git push -f ${deployRemote} ${builtRef}:refs/heads/${deployRemoteRef}
 
