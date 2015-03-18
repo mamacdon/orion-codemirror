@@ -1,10 +1,11 @@
 #!/bin/bash
 outdir=../out
 cwd=$(pwd)
-pathToRjs=../node_modules/requirejs/bin/r.js
+builddir=$( cd "$( dirname "$0" )" && pwd )
+pathToRjs=${builddir}/../node_modules/requirejs/bin/r.js
 
 if [[ ! -f "${pathToRjs}" ]]; then
-	echo "Couldn't find r.js. Ensure you have run 'npm install' and you are calling this script from the 'build' directory."
+	echo "Couldn't find r.js. Did you forget to run 'npm install'?"
 	exit 1
 fi
 
@@ -20,8 +21,10 @@ else
 	echo Cleaning "$outdir"...
 	rm -rf $outdir
 	echo "Running optimizer..."
+	pushd ${builddir}
 	node "${pathToRjs}" -o app.build.js
 
 	echo "Done."
 fi
 exit 0
+
