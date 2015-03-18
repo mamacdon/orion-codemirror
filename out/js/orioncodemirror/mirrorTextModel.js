@@ -1,0 +1,1 @@
+define(["orion/editor/textModel"],function(e){function t(e){}function n(){}return n.prototype=new e.TextModel,n.prototype.onTargetModelChanging=function(e){t(e);var n=e.start+e.removedCharCount;n=Math.min(n,this.getCharCount()),n=Math.max(n,e.start),this.setText(e.text,e.start,n)},{MirrorTextModel:n}});
